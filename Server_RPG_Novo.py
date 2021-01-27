@@ -276,10 +276,9 @@ while True:
                 # Get user by notified socket, so we will know who sent the message
                 user = clients[notified_socket]
                 messagepf=pickle.loads(message["data"])
-                print(messagepf.sender)
                 if not user['rolling']:
                     if messagepf.destiny:
-                        messagepf.caller='Privado > '+messagepf.sender
+                        messagepf.caller='Privado > '+clients[notified_socket]['data']
                         messagepf.cor=clients[notified_socket]['cor']
                         messagepf.sender=clients[notified_socket]['data']
                         message['data']=pickle.dumps(messagepf)
@@ -465,7 +464,7 @@ while True:
                     clients[notified_socket]['calling'] = []
                     clients[notified_socket]['rolling'] = 0
                     clients[notified_socket]['cor']=cor['data'].decode('utf-8')
-                    print('Accepted new connection from user: {}.'.format(clients[notified_socket]['data'])
+                    print('Accepted new connection from user: {}.'.format(clients[notified_socket]['data']))
                     send_new_message(instructions,notified_socket)
                 del espera_de_cor[notified_socket]
             else:
