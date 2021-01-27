@@ -346,7 +346,8 @@ def indent(text, prefix, predicate=None):
 
 HEADER_LENGTH = 10
 PORT = 1234
-SERVER = "192.168.192.1"
+hostname = socket.gethostname()
+SERVER = socket.gethostbyname(hostname)
 ADDRESS = (SERVER, PORT) 
 FORMAT = "utf-8"
 COR_1='#000000'
