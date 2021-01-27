@@ -11,8 +11,6 @@ from tkinter.colorchooser import *
 import sys
 import re
 
-#ivangay
-
 red=Color('#ff0000')
 violet=Color('#ff00ff')
 colors = list(red.range_to(violet,50))
