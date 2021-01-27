@@ -8,7 +8,9 @@ getcontext().prec=20
 
 HEADER_LENGTH = 10
 
-IP = "192.168.192.1"
+hostname = socket.gethostname()
+
+IP = socket.gethostbyname(hostname)
 PORT = 1234
 
 # Create a socket
