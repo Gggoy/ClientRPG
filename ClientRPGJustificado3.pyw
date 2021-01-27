@@ -10,11 +10,13 @@ import time
 from tkinter.colorchooser import *
 import sys
 import re
+import pickle
 
 red=Color('#ff0000')
 violet=Color('#ff00ff')
 colors = list(red.range_to(violet,50))
 colors=colors+list(violet.range_to(red,50))
+namer=''
 
 __all__ = ['TextWrapper', 'wrap', 'fill', 'dedent', 'indent', 'shorten']
 
@@ -357,6 +359,23 @@ COR_1='#000000'
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
 client.connect(ADDRESS)
 
+class bloco:
+    def __init__(self,advan,premod,posmod):
+        self.advan=advan
+        self.premod=premod
+        self.posmod=posmod
+
+class msg:
+    def __init__(self,destiny,content):
+        self.destiny=destiny
+        self.content=content
+
+class roll:
+    def __init__(self,caller,receiver,hidden,who):
+        self.caller=caller
+        self.receiver=receiver
+        self.hidden=hidden
+        self.who=who
 
 # GUI class for the chat 
 class GUI: 
@@ -433,11 +452,14 @@ class GUI:
                 server_message_length = int(server_message_header.decode(FORMAT).strip())
                 server_message=client.recv(server_message_length).decode(FORMAT)
                 if server_message=='Ok':
+                        global namer
+                        namer=name
                         try:
                             color=askcolor(title ="Escolha a cor do seu usuário")[1].encode(FORMAT)
                         except:
                             client.close()
                             sys.exit()
+                        colour=color
                         color_header=f"{len(color):<{HEADER_LENGTH}}".encode(FORMAT)
                         client.send(color_header + color)
                         self.login.destroy()
@@ -582,22 +604,14 @@ class GUI:
         def receive(self): 
                 while True: 
                         try:
-                                username_header = client.recv(HEADER_LENGTH)
-                                if not len(username_header):
-                                        client.close()
-                                        sys.exit()
-                                username_length = int(username_header.decode(FORMAT).strip())
-                                username = client.recv(username_length).decode(FORMAT)
                                 message_header = client.recv(HEADER_LENGTH)
                                 message_length = int(message_header.decode(FORMAT).strip())
-                                message = client.recv(message_length).decode(FORMAT)
-                                message_final = username+' > '+message
-                                corzeta_header=client.recv(HEADER_LENGTH)
-                                corzeta_lenght=int(corzeta_header.decode(FORMAT).strip())
-                                corzeta=client.recv(corzeta_lenght).decode(FORMAT)
+                                message = client.recv(message_length)
+                                message=pickle.loads(message)
+                                message_final = message.sender+' > '+message.content
                                 # insert messages to text box 
                                 self.textCons.config(state = NORMAL)
-                                self.textCons.tag_configure(corzeta,foreground=corzeta)
+                                self.textCons.tag_configure(message.cor,foreground=message.cor)
                                 textlis=wrap(message_final,width=50)
                                 for u in range(len(textlis)):
                                     if textlis[u].startswith('\j'):
@@ -611,9 +625,9 @@ class GUI:
                                         self.textCons.insert(END,'\n')
                                     elif textlis[u+1]!='' and not textlis[u+1].startswith(' '):
                                         linha=justify(textlis[u],50)
-                                        self.textCons.insert(END, linha+'\n',corzeta)
+                                        self.textCons.insert(END, linha+'\n',message.cor)
                                     else:
-                                        self.textCons.insert(END, textlis[u]+'\n',corzeta)
+                                        self.textCons.insert(END, textlis[u]+'\n',message.cor)
                                 self.textCons.insert(END,'\n')
                                 self.textCons.see(END)
                                 self.textCons.config(state = DISABLED) 
@@ -624,9 +638,9 @@ class GUI:
                 
         # function to send messages 
         def sendMessage(self):
-                self.textCons.config(state=DISABLED) 
+                self.textCons.config(state=DISABLED)
                 while True:
-                        message_sent = self.msg.encode(FORMAT)
+                        message_sent = pickle.dumps(msg(namer,self.msg))
                         message_sent_header = f"{len(message_sent):<{HEADER_LENGTH}}".encode(FORMAT)
                         client.send(message_sent_header+message_sent)    
                         break   

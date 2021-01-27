@@ -1,5 +1,6 @@
 import socket
 import select
+import pickle
 import random
 import re
 from decimal import *
@@ -12,6 +13,25 @@ hostname = socket.gethostname()
 
 IP = socket.gethostbyname(hostname)
 PORT = 1234
+
+class bloco:
+    def __init__(self,advan,premod,posmod):
+        self.advan=advan
+        self.premod=premod
+        self.posmod=posmod
+
+class msg:
+    def __init__(self,sender,content,cor):
+        self.sender=sender
+        self.content=content
+        self.cor=cor
+
+class roll:
+    def __init__(self,caller,receiver,hidden,info):
+        self.caller=caller
+        self.receiver=receiver
+        self.hidden=hidden
+        self.info=info
 
 # Create a socket
 # socket.AF_INET - address family, IPv4, some other possible are AF_INET6, AF_BLUETOOTH, AF_UNIX
@@ -40,7 +60,7 @@ espera_de_cor={}
 
 rolls={}
 
-instructions='\kComandos:\n*Rolar dados.\\nExemplo: "-dice -3+5d6-3-7d8+2"\n*Iniciativa. Retorna uma sequência randomizada e uniformemente espaçada de Ups e Downs: Caso o número de integrantes de cada grupo seja igual, antes determinem quem será Up e quem será Down.\\nExemplo: "-init 5x4" (Combate de 4 contra 5)\n*Chamar rolagem.\\nExemplo: "-roll username1 username1 username2" (Chama o usuário 1 para duas rolagens consecutivas e o usuário 2 para uma)\\n\g*Tags do comando -roll (Colocadas em qualquer parte do input após o -roll). -me (Default, info será só dada a quem chamou) -we (Info será dada a ambos os participantes) -you (Info somente para quem foi chamado) -res (Resume as informações do resultado para determinados efeitos de roleplay) -hidden (Exclui qualquer configuração de info e substitui por um Sim ou Não que torna indistiguível a performance da rolagem)\n*Mensagem privada. Cite em qualquer ponto dentro do texto os usernames que receberão a mensagem, e a primeira menção de tais usernames será excluída da mensagem final. Para mensagens mais limpas, coloque-os imediatamente depois do -p em sucessão ininterrupta e com a primeira letra da mensagem sem dar espaço logo em seguida, como mostrado a seguir.\\nExemplo: "-pusername1username2Olá para vocês dois!"\\n***OBS. Os comandos devem começar imediatamente com a chave, porém subsequentes usos de espaço são irrelevantes, a não ser em mensagens privadas, onde são mantidos***' 
+instructions='\kComandos:\n*Rolar dados.\\nExemplo: "-dice -3+5d6-3-7d8+2"\n*Iniciativa. Retorna uma sequência randomizada e uniformemente espaçada de Ups e Downs: Caso o número de integrantes de cada grupo seja igual, antes determinem quem será Up e quem será Down.\\nExemplo: "-init 5x4" (Combate de 4 contra 5)\\n***OBS. Os comandos devem começar imediatamente com a chave, porém subsequentes usos de espaço são irrelevantes, a não ser em mensagens privadas, onde são mantidos***' 
 
 send_options=['-me','-you','-we','-hidden']
 
@@ -48,13 +68,12 @@ print(f'Listening for connections on {IP}:{PORT}...')
 
 username = 'Server'.encode('utf-8')
 username_header = f"{len(username):<{HEADER_LENGTH}}".encode('utf-8')
-colore='#ffffff'.encode('utf-8')
-colore_header= f"{len(colore):<{HEADER_LENGTH}}".encode('utf-8')
+colore='#ffffff'
 
 def send_new_message(notifi,client_socket):
-    notifi=notifi.encode('utf-8')
+    notifi=pickle.dumps(msg('Server',notifi,colore))
     notifi_header = f"{len(notifi):<{HEADER_LENGTH}}".encode('utf-8')
-    client_socket.send(username_header+username+notifi_header+notifi+colore_header+colore)
+    client_socket.send(notifi_header+notifi)
 
 def send_rolagem(rolagem,r,crit):
     if r<=crit:
@@ -63,8 +82,8 @@ def send_rolagem(rolagem,r,crit):
         notifi='Sucesso\gNet Advantage: '+str(rolagem['advan'])
     else:
         notifi='Fracasso\gNet Advantage: '+str(rolagem['advan'])
-    notifi+=rolagem['res']*('\gInfo: '+str(round(20-20*r/rolagem['q'],2))+' de '+str(round(20-20*rolagem['p']/rolagem['q'],2)))+"\gRolagem de "+clients[rolagem['receiver']]['data'].decode('utf-8')
-    print(notifi+' e '+clients[rolagem['caller']]['data'].decode('utf-8'))
+    notifi+=rolagem['res']*('\gInfo: '+str(round(20-20*r/rolagem['q'],2))+' de '+str(round(20-20*rolagem['p']/rolagem['q'],2)))+"\gRolagem de "+clients[rolagem['receiver']]['data']
+    print(notifi+' e '+clients[rolagem['caller']]['data'])
     if rolagem['send_type']=='-me':
         send_new_message(notifi,rolagem['caller'])
     elif rolagem['send_type']=='-you':
@@ -117,12 +136,12 @@ def apply_posmod_pre(receiver,fonte,rolagem):
                             rolagem['p']+=Decimal(alternativa.split('d')[0])*(int(alternativa.split('d')[1])+1)*5
                             if random.randint(1,20)<=int(alternativa.split('d')[1]):
                                 mod[0]-=1
-                                send_new_message('Usado o recurso '+alternativa+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data'].decode('utf-8')+' e '+clients[rolagem['receiver']]['data'].decode('utf-8')+'.',receiver)
+                                send_new_message('Usado o recurso '+alternativa+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.',receiver)
                 else:
                     rolagem['p']+=Decimal(mod[1].split('d')[0])*(int(mod[1].split('d')[1])+1)*5
                     if random.randint(1,20)<=int(mod[1].split('d')[1]):
                         mod[0]-=1
-                        send_new_message('Usado o recurso '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data'].decode('utf-8')+' e '+clients[rolagem['receiver']]['data'].decode('utf-8')+'.',receiver)
+                        send_new_message('Usado o recurso '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.',receiver)
 
 def apply_posmod_pos(receiver,fonte,rolagem,r):
     for mod in fonte['posmod']:
@@ -134,24 +153,24 @@ def apply_posmod_pos(receiver,fonte,rolagem,r):
                         if r<=rolagem['p'] and '-' in alternativa:
                             if r-Decimal(alternativa)*50>rolagem['p']:
                                 mod[0]-=1
-                                send_new_message('Usado o recurso '+alternativa+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data'].decode('utf-8')+' e '+clients[rolagem['receiver']]['data'].decode('utf-8')+'.',receiver)
+                                send_new_message('Usado o recurso '+alternativa+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.',receiver)
                                 r-=Decimal(alternativa)*50
                         elif r>rolagem['p'] and '-' not in alternativa:
                             if r-Decimal(alternativa)*50<=rolagem['p']:
                                 mod[0]-=1
-                                send_new_message('Usado o recurso '+alternativa+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data'].decode('utf-8')+' e '+clients[rolagem['receiver']]['data'].decode('utf-8')+'.',receiver)
+                                send_new_message('Usado o recurso '+alternativa+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.',receiver)
                                 r-=Decimal(alternativa)*50
             else:
                 if 'd' not in mod[1]:
                     if r<=rolagem['p'] and '-' in mod[1]:
                         if r-Decimal(mod[1])*50>rolagem['p']:
                             mod[0]-=1
-                            send_new_message('Usado o recurso '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data'].decode('utf-8')+' e '+clients[rolagem['receiver']]['data'].decode('utf-8')+'.',receiver)
+                            send_new_message('Usado o recurso '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.',receiver)
                             r-=Decimal(mod[1])*50
                     elif r>rolagem['p'] and '-' not in mod[1]:
                         if r-Decimal(mod[1])*50<=rolagem['p']:
                             mod[0]-=1
-                            send_new_message('Usado o recurso '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data'].decode('utf-8')+' e '+clients[rolagem['receiver']]['data'].decode('utf-8')+'.',receiver)
+                            send_new_message('Usado o recurso '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.',receiver)
                             r-=Decimal(mod[1])*50
     return(r)
 
@@ -232,17 +251,17 @@ while True:
 
                 # If False, client disconnected, cleanup
                 if message is False:
-                    print('Closed connection from: {}.'.format(clients[notified_socket]['data'].decode('utf-8')))
+                    print('Closed connection from: {}.'.format(clients[notified_socket]['data']))
                     for client_socket in clients[notified_socket]['calling']:
-                        send_new_message(clients[notified_socket]['data'].decode('utf-8')+" desconectou enquanto chamava você. Você não está mais rolando.",client_socket)
+                        send_new_message(clients[notified_socket]['data']+" desconectou enquanto chamava você. Você não está mais rolando.",client_socket)
                         clients[client_socket]['rolling']=0
                     try:
                         clients[rolls[notified_socket][0]['caller']]['calling'].remove(notified_socket)
                         if clients[rolls[notified_socket][0]['caller']]['calling']==[]:
-                            send_new_message(clients[notified_socket]['data'].decode('utf-8')+" desconectou e era sua única chamada. Você não está mais rolando.",rolls[notified_socket][0]['caller'])
+                            send_new_message(clients[notified_socket]['data']+" desconectou e era sua única chamada. Você não está mais rolando.",rolls[notified_socket][0]['caller'])
                             clients[rolls[notified_socket][0]['caller']]['rolling']=0
                         else:
-                            send_new_message(clients[notified_socket]['data'].decode('utf-8')+" desconectou porém você ainda tem chamadas. Você continua rolando.",rolls[notified_socket][0]['caller'])
+                            send_new_message(clients[notified_socket]['data']+" desconectou porém você ainda tem chamadas. Você continua rolando.",rolls[notified_socket][0]['caller'])
                     except:
                         pass
                     
@@ -256,29 +275,19 @@ while True:
 
                 # Get user by notified socket, so we will know who sent the message
                 user = clients[notified_socket]
-                messagepf=(message["data"].decode("utf-8"))
+                messagepf=pickle.loads(message["data"])
+                print(messagepf.sender)
                 if not user['rolling']:
-                    if messagepf.startswith('-p'):
-                        new_user=('Privado > '+user['data'].decode("utf-8")).encode('utf-8')
-                        new_user_header=f"{len(new_user):<{HEADER_LENGTH}}".encode('utf-8')
-                        messagepf=messagepf.replace('-p','')
-                        verifi=[]
+                    if messagepf.destiny:
+                        messagepf.caller='Privado > '+messagepf.sender
+                        messagepf.cor=clients[notified_socket]['cor']
+                        messagepf.sender=clients[notified_socket]['data']
+                        message['data']=pickle.dumps(messagepf)
+                        message["header"]=f"{len(message['data']):<{HEADER_LENGTH}}".encode('utf-8')
                         for client_socket in clients:
-                            check=clients[client_socket]['data'].decode('utf-8')
-                            if check in messagepf:
-                                verifi.append(client_socket)
-                                messagepf=messagepf.replace(check,'',1)
-                        messagepf=messagepf.encode('utf-8')
-                        message["header"]=f"{len(messagepf):<{HEADER_LENGTH}}".encode('utf-8')
-                        notified_socket.send(new_user_header + new_user + message["header"] + messagepf+clients[notified_socket]['corheader']+clients[notified_socket]['cor'])
-                        if verifi:
-                            if notified_socket in verifi:
-                                verifi.remove(notified_socket)
-                            for client_socket in verifi:
-                                client_socket.send(new_user_header + new_user + message["header"] + messagepf+clients[notified_socket]['corheader']+clients[notified_socket]['cor'])
-                        else:
-                            send_new_message('Cite o nome do destinatário corretamente na mensagem.',notified_socket)
-                    
+                            if clients[client_socket]['data'] in messagepf.destiny:
+                                client_socket.send(message["header"] + message['data'])
+                        notified_socket.send(message["header"] + message['data'])                    
                     elif messagepf.startswith('-dice'):
                         messagepf=messagepf.replace(' ','')
                         messagepf=messagepf.replace('-dice','')
@@ -327,7 +336,7 @@ while True:
                                 dice_box=dice_box[1:]
                                 dice_box=' \g'+dice_box
                             send_new_message(messagepf+':'+dice_box+' \gTotal: '+str(soma),notified_socket)
-                            print(clients[notified_socket]['data'].decode('utf-8')+' rolou: '+messagepf+':'+dice_box+' \gTotal: '+str(soma))
+                            print(clients[notified_socket]['data']+' rolou: '+messagepf+':'+dice_box+' \gTotal: '+str(soma))
                         except:
                             send_new_message("Algo deu errado, confira seu envio e reenvie.",notified_socket)
                     elif messagepf.startswith('-init'):
@@ -373,7 +382,7 @@ while True:
                             send_new_message("Coloque na frente do input do bloco, sem espaços, o que você espera enviar ao oponente em caso de sucesso dele (s ou n).",notified_socket)
                         for client_socket in clients:
                           if client_socket!=notified_socket:
-                            check=clients[client_socket]['data'].decode('utf-8')
+                            check=clients[client_socket]['data']
                             roladas=messagepf.count(check)
                             if roladas:
                                 if not clients[client_socket]['rolling']:
@@ -381,7 +390,7 @@ while True:
                                     clients[client_socket]['rolling']+=roladas
                                     aceitos.append(client_socket)
                                     send_new_message(check+" encontra-se disponível.",notified_socket)
-                                    send_new_message(user['data'].decode('utf-8')+" iniciou "+str(roladas)+" rolagem(ns) com você com as tags: "+send_type+', -res('+str(res_type)+').'+(roladas>1)*"\nRecomenda-se ler o resultado anterior para inserir o próximo bloco para evitar repetição de recursos."+"\nBloco da primeira rolagem:",client_socket)
+                                    send_new_message(user['data']+" iniciou "+str(roladas)+" rolagem(ns) com você com as tags: "+send_type+', -res('+str(res_type)+').'+(roladas>1)*"\nRecomenda-se ler o resultado anterior para inserir o próximo bloco para evitar repetição de recursos."+"\nBloco da primeira rolagem:",client_socket)
                                     rolls[client_socket]=[{'advan': 0, 'res': res_type,'receiver': client_socket,'caller': notified_socket,'ready':0,'p':1000,'q':2000,'send_type': send_type}]
                                     for i in range(roladas-1):
                                         rolls[client_socket].append({'advan': 0,'res': res_type,'receiver': client_socket,'caller': notified_socket,'send_type': send_type,'ready': 0,'p': 1000,'q': 2000})
@@ -450,15 +459,13 @@ while True:
                         sockets_list.remove(notified_socket)
                 else:
                     for client_socket in clients:
-                        send_new_message('O usuário '+espera_de_cor[notified_socket]['data'].decode('utf-8')+' se juntou ao chat!',client_socket)
+                        send_new_message('O usuário '+espera_de_cor[notified_socket]['data']+' se juntou ao chat!',client_socket)
                     # Save username and username header
                     clients[notified_socket] = espera_de_cor[notified_socket]
-                    clients[notified_socket]['data']=((clients[notified_socket]['data'].decode('utf-8')).replace(' ','_')).encode('utf-8')
                     clients[notified_socket]['calling'] = []
                     clients[notified_socket]['rolling'] = 0
-                    clients[notified_socket]['cor']=cor['data']
-                    clients[notified_socket]['corheader']=cor['header']
-                    print('Accepted new connection from user: {}.'.format(espera_de_cor[notified_socket]['data'].decode('utf-8')))
+                    clients[notified_socket]['cor']=cor['data'].decode('utf-8')
+                    print('Accepted new connection from user: {}.'.format(clients[notified_socket]['data'])
                     send_new_message(instructions,notified_socket)
                 del espera_de_cor[notified_socket]
             else:
@@ -473,25 +480,25 @@ while True:
                     else:
                         
                         login_message='Ok'
+                        user['data']=user['data'].decode('utf-8').replace(' ','_')
                         
                         for socket in clients:
-                            if user['data'].decode('utf-8') in clients[socket]['data'].decode('utf-8') or clients[socket]['data'].decode('utf-8') in user['data'].decode('utf-8'):
+                            if user['data'] in clients[socket]['data'] or clients[socket]['data'] in user['data']:
                                 login_message='Username semelhante já em uso, tente outro'
 
-                        user_txt=user['data'].decode('utf-8')
-
                         if login_message=='Ok':
-                            if user_txt=='Server' or user_txt.replace(' ','')=='':
+                            if user['data']=='Server' or user['data']=='':
                                 login_message='Username não pode ser Server ou ser branco, tente outro'
 
                         if login_message=='Ok':
-                            if '-' in user_txt or '/' in user_txt or '\\' in user_txt:
+                            if '-' in user['data'] or '/' in user['data'] or '\\' in user['data']:
                                 login_message='Retire caracteres - e / e \ do username'
+                            else:
+                                espera_de_cor[notified_socket]=user
+
                         login_message=login_message.encode('utf-8')
                         login_message_header=f"{len(login_message):<{HEADER_LENGTH}}".encode('utf-8')
                         notified_socket.send(login_message_header+login_message)
-                        if login_message=='Ok'.encode('utf-8'):
-                            espera_de_cor[notified_socket]= user
 
     # It's not really necessary to have this, but will handle some socket exceptions just in case
     for notified_socket in exception_sockets:
