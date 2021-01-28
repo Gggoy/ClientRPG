@@ -139,7 +139,7 @@ def rola(rolagem):
         return
     caller=rolagem['caller']
     recibru=rolagem['receiver']
-    rolls[recibru].pop()
+    rolls[recibru].pop(0)
     crit=rolagem['p']/10+(rolagem['p']>rolagem['q'])*(rolagem['p']-rolagem['q'])
     apply_posmod_pre(recibru,rolagem,rolagem)
     apply_posmod_pre(caller,rolls[caller],rolagem)
