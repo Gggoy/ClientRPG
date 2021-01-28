@@ -360,10 +360,10 @@ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(ADDRESS)
 
 class bloco:
-    def __init__(self,advan,premod,posmod):
-        self.advan=advan
+    def __init__(self,premod,posmod,sn):
         self.premod=premod
         self.posmod=posmod
+        self.sn=sn
 
 class msg:
     def __init__(self,destiny,content):
@@ -371,10 +371,9 @@ class msg:
         self.content=content
 
 class roll:
-    def __init__(self,caller,receiver,hidden,who):
+    def __init__(self,caller,receiver,who):
         self.caller=caller
         self.receiver=receiver
-        self.hidden=hidden
         self.who=who
 
 # GUI class for the chat 

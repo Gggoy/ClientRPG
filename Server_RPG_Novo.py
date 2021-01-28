@@ -14,24 +14,11 @@ hostname = socket.gethostname()
 IP = socket.gethostbyname(hostname)
 PORT = 1234
 
-class bloco:
-    def __init__(self,advan,premod,posmod):
-        self.advan=advan
-        self.premod=premod
-        self.posmod=posmod
-
 class msg:
     def __init__(self,sender,content,cor):
         self.sender=sender
         self.content=content
         self.cor=cor
-
-class roll:
-    def __init__(self,caller,receiver,hidden,info):
-        self.caller=caller
-        self.receiver=receiver
-        self.hidden=hidden
-        self.info=info
 
 # Create a socket
 # socket.AF_INET - address family, IPv4, some other possible are AF_INET6, AF_BLUETOOTH, AF_UNIX
@@ -97,34 +84,6 @@ def send_rolagem(rolagem,r,crit):
         send_new_message((r<=rolagem['p'])*rolagem['hidden_message']+(r>rolagem['p'])*opposite_message+'\gNet Advantage: '+str(rolagem['advan']),rolagem['receiver'])
         print((r<=rolagem['p'])*rolagem['hidden_message']+(r>rolagem['p'])*opposite_message)
 
-def read_bloco(bloco):
-    bloco=bloco.replace(' ','')
-    if bloco=='':
-        posmod=[[0,0]]
-        return(0,posmod,0)
-    bloco=re.findall('\[([^[\]]*)\]',bloco)
-    premod=0
-    advan=0
-    posmod=[]
-    if bloco[0]!='':
-        for lacuna in bloco[0].split(','):
-            if 'd' in lacuna:
-                if 'adv' not in lacuna:
-                    premod+=Decimal(lacuna.split('d')[0])*random.randint(1,int(lacuna.split('d')[1]))*50
-                else:
-                    advan+=Decimal(lacuna.split('a')[0]+(len(lacuna.split('a')[0])<2 and not lacuna.split('a')[0].isdigit())*'1')
-            else:
-                premod+=Decimal(lacuna)*50
-    if bloco[1]!='':
-        if '(' not in bloco[1]:
-            return
-        for lacuna in re.findall("\((.*?)\)",bloco[1]):
-            lacuna=[int(lacuna.split(',')[0]),lacuna.split(',')[1]]
-            posmod.append(lacuna)
-    else:
-        posmod=[[0,0]]
-    return(premod,posmod,advan)
-
 def apply_posmod_pre(receiver,fonte,rolagem):
     for mod in fonte['posmod']:
         if mod[0]!=0:
@@ -178,11 +137,10 @@ def rola(rolagem):
     global rolls
     if rolagem['ready']!=2:
         return
-    rolagem['p']+=(rolagem['advan']==1)*300+(rolagem['advan']==2)*500+(rolagem['advan']>2)*600
-    rolagem['p']+=-(rolagem['advan']==-1)*300-(rolagem['advan']==-2)*500-(rolagem['advan']<-2)*600
-    crit=rolagem['p']/10+(rolagem['p']>rolagem['q'])*(rolagem['p']-rolagem['q'])
     caller=rolagem['caller']
     recibru=rolagem['receiver']
+    rolls[recibru].pop()
+    crit=rolagem['p']/10+(rolagem['p']>rolagem['q'])*(rolagem['p']-rolagem['q'])
     apply_posmod_pre(recibru,rolagem,rolagem)
     apply_posmod_pre(caller,rolls[caller],rolagem)
     r=random.randint(1,rolagem['q'])
@@ -276,18 +234,130 @@ while True:
                 # Get user by notified socket, so we will know who sent the message
                 user = clients[notified_socket]
                 messagepf=pickle.loads(message["data"])
-                if not user['rolling']:
-                    if messagepf.destiny:
-                        messagepf.caller='Privado > '+clients[notified_socket]['data']
-                        messagepf.cor=clients[notified_socket]['cor']
-                        messagepf.sender=clients[notified_socket]['data']
+                
+                if type(messagepf).__name__=='msg':
+                    messagepf.cor=user['cor']
+                    if not messagepf.destiny:
+                        message['data']=pickle.dumps(messagepf)
+                        message["header"]=f"{len(message['data']):<{HEADER_LENGTH}}".encode('utf-8')
+                        for client_socket in clients:
+                            client_socket.send(message["header"] + message['data'])
+                    else:
+                        messagepf.sender='Privado > '+user['data']
                         message['data']=pickle.dumps(messagepf)
                         message["header"]=f"{len(message['data']):<{HEADER_LENGTH}}".encode('utf-8')
                         for client_socket in clients:
                             if clients[client_socket]['data'] in messagepf.destiny:
                                 client_socket.send(message["header"] + message['data'])
-                        notified_socket.send(message["header"] + message['data'])                    
-                    elif messagepf.startswith('-dice'):
+                        notified_socket.send(message["header"] + message['data'])
+
+                elif type(messagepf).__name__=='roll':
+                        aceitos=[]                        
+                        if messagepf.who=='hidden':
+                            send_new_message("Confira o que você espera enviar ao oponente em caso de sucesso dele (s ou n).",notified_socket)
+                        for client_socket in clients:
+                            check=clients[client_socket]['data']
+                            roladas=messagepf.receiver.count(check)
+                            if roladas:
+                                if not clients[client_socket]['rolling']:
+                                    user['rolling']=1
+                                    clients[client_socket]['rolling']+=roladas
+                                    aceitos.append(client_socket)
+                                    send_new_message(check+" encontra-se disponível.",notified_socket)
+                                    send_new_message(user['data']+" iniciou "+str(roladas)+" rolagem(ns) com você com as tags: "+messagepf.who+messagepf.hidden*'e hidden'+(roladas>1)*"\nRecomenda-se ler o resultado anterior para inserir o próximo bloco para evitar repetição de recursos."+"\nBloco da primeira rolagem:",client_socket)
+                                    rolls[client_socket]=[{'advan': 0,'receiver': client_socket,'caller': notified_socket,'ready':0,'p':1000,'q':2000,'send_type': messagepf.who}]
+                                    for i in range(roladas-1):
+                                        rolls[client_socket].append({'advan': 0,'receiver': client_socket,'caller': notified_socket,'ready':0,'p':1000,'q':2000,'send_type': messagepf.who})
+                                else:
+                                    send_new_message(check+" encontra-se indisponível.",notified_socket)    
+                        user['calling']=aceitos
+                        if user['rolling']:
+                            send_new_message("Bloco comunitário:",notified_socket)
+                            rolls[notified_socket]={'send_type':messagepf.who}
+                        else:
+                            send_new_message("Ninguém aceitou.",notified_socket)
+
+                elif type(messagepf).__name__=='bloco':
+                    if user['rolling']:
+                        rolls[notified_socket][0]['posmod']=messagepf.posmod
+                        if not user['calling']:
+                            rolls[notified_socket][0]['premod']=messagepf.premod
+                            rolls[notified_socket][0]['ready']+=1
+                            rola(rolls[called_socket][0]) 
+                        else:
+                            if rolls[notified_socket]['send_type']=='hidden':
+                                for called_socket in user['calling']:
+                                    for i in range(len(rolls[called_socket])):
+                                        rolls[called_socket][i]['hidden_message']=messagepf.sn
+                            for called_socket in user['calling']:
+                                for i in range(len(rolls[called_socket])):
+                                    rolls[called_socket][i]['p']+=messagepf.premod
+                                    rolls[called_socket][i]['ready']+=1
+                                    rola(rolls[called_socket][i]) 
+                        user['rolling']-=1
+                        user['calling']=[]
+                        send_new_message('Premod: '+str(messagepf.premod)+'\nPosmod: '+messagepf.posmod+"\gFinalizado! Mais "+str(user['rolling'])+' rolagens.',notified_socket)
+                    else:
+                        send_new_message("Você não se encontra rolando no momento.",notified_socket)
+                            
+            elif notified_socket in espera_de_cor:
+                cor=receive_message(notified_socket)
+                if cor is False:
+                        sockets_list.remove(notified_socket)
+                else:
+                    for client_socket in clients:
+                        send_new_message('O usuário '+espera_de_cor[notified_socket]['data']+' se juntou ao chat!',client_socket)
+                    # Save username and username header
+                    clients[notified_socket] = espera_de_cor[notified_socket]
+                    clients[notified_socket]['calling'] = []
+                    clients[notified_socket]['rolling'] = 0
+                    clients[notified_socket]['cor']=cor['data'].decode('utf-8')
+                    print('Accepted new connection from user: {}.'.format(clients[notified_socket]['data']))
+                    send_new_message(instructions,notified_socket)
+                del espera_de_cor[notified_socket]
+            else:
+                    # Client should send his name right away, receive it
+                    user = receive_message(notified_socket)
+
+                    # If False - client disconnected before he sent his name
+                    if user is False:
+                            
+                            sockets_list.remove(notified_socket)
+
+                    else:
+                        
+                        login_message='Ok'
+                        user['data']=user['data'].decode('utf-8').replace(' ','_')
+                        
+                        for socket in clients:
+                            if user['data'] in clients[socket]['data'] or clients[socket]['data'] in user['data']:
+                                login_message='Username semelhante já em uso, tente outro'
+
+                        if login_message=='Ok':
+                            if user['data']=='Server' or user['data']=='':
+                                login_message='Username não pode ser Server ou ser branco, tente outro'
+
+                        if login_message=='Ok':
+                            if '-' in user['data'] or '/' in user['data'] or '\\' in user['data']:
+                                login_message='Retire caracteres - e / e \ do username'
+                            else:
+                                espera_de_cor[notified_socket]=user
+
+                        login_message=login_message.encode('utf-8')
+                        login_message_header=f"{len(login_message):<{HEADER_LENGTH}}".encode('utf-8')
+                        notified_socket.send(login_message_header+login_message)
+
+    # It's not really necessary to have this, but will handle some socket exceptions just in case
+    for notified_socket in exception_sockets:
+
+        # Remove from list for socket.socket()
+        sockets_list.remove(notified_socket)
+
+        # Remove from our list of users
+        del clients[notified_socket]
+
+
+        elif messagepf.startswith('-dice'):
                         messagepf=messagepf.replace(' ','')
                         messagepf=messagepf.replace('-dice','')
                         messagepf=messagepf.replace('-','+-')
@@ -366,144 +436,4 @@ while True:
                         except:
                             send_new_message("Algo deu errado, confira seu envio e reenvie.",notified_socket)
 
-                    elif messagepf.startswith('-roll'):
-                        aceitos=[]
-                        send_type='-me'
-                        res_type=True
-                        if '-res' in messagepf:
-                            res_type=False
-                            messagepf=messagepf.replace('-res','')
-                        for option in send_options:
-                            if option in messagepf:
-                                send_type=option
-                                messagepf=messagepf.replace(option,'')
-                        if send_type=='-hidden':
-                            send_new_message("Coloque na frente do input do bloco, sem espaços, o que você espera enviar ao oponente em caso de sucesso dele (s ou n).",notified_socket)
-                        for client_socket in clients:
-                          if client_socket!=notified_socket:
-                            check=clients[client_socket]['data']
-                            roladas=messagepf.count(check)
-                            if roladas:
-                                if not clients[client_socket]['rolling']:
-                                    user['rolling']=1
-                                    clients[client_socket]['rolling']+=roladas
-                                    aceitos.append(client_socket)
-                                    send_new_message(check+" encontra-se disponível.",notified_socket)
-                                    send_new_message(user['data']+" iniciou "+str(roladas)+" rolagem(ns) com você com as tags: "+send_type+', -res('+str(res_type)+').'+(roladas>1)*"\nRecomenda-se ler o resultado anterior para inserir o próximo bloco para evitar repetição de recursos."+"\nBloco da primeira rolagem:",client_socket)
-                                    rolls[client_socket]=[{'advan': 0, 'res': res_type,'receiver': client_socket,'caller': notified_socket,'ready':0,'p':1000,'q':2000,'send_type': send_type}]
-                                    for i in range(roladas-1):
-                                        rolls[client_socket].append({'advan': 0,'res': res_type,'receiver': client_socket,'caller': notified_socket,'send_type': send_type,'ready': 0,'p': 1000,'q': 2000})
-                                else:
-                                    send_new_message(check+" encontra-se indisponível.",notified_socket)
-                                
-                        user['calling']=aceitos
-                        if user['rolling']:
-                            send_new_message("Bloco comunitário:",notified_socket)
-                            rolls[notified_socket]={'send_type':send_type}
-                        else:
-                            send_new_message("Ninguém aceitou ou você não escreveu os usernames corretamente.",notified_socket)
-                    else:
-                        for client_socket in clients:
-                            # Send user and message (both with their headers)
-                            # We are reusing here message header sent by sender, and saved username header send by user when he connected
-                            client_socket.send(user['header'] + user['data'] + message['header'] + message['data']+clients[notified_socket]['corheader']+clients[notified_socket]['cor'])
 
-                # Em caso de rolada ocorrendo
-                else:    
-                    # Quem chamou
-                    if user['calling']:
-                        if rolls[notified_socket]['send_type']!='-hidden' or (messagepf.startswith('s') or messagepf.startswith('n')):
-                            for called_socket in user['calling']:
-                                for i in range(len(rolls[called_socket])):
-                                    rolls[called_socket][i]['hidden_message']='s'*messagepf.startswith('s')+'n'*messagepf.startswith('n')
-                                    messagepf=(messagepf.replace('s','')).replace('n','')
-                            try:
-                                premod,posmod,advan=read_bloco(messagepf)        
-                            except:
-                                send_new_message("Algo deu errado, confira seu envio e reenvie.",notified_socket)
-                            else:
-                                rolls[notified_socket]['posmod']=posmod
-                                for called_socket in user['calling']:
-                                    for i in range(len(rolls[called_socket])):
-                                        rolls[called_socket][i]['p']+=premod
-                                        rolls[called_socket][i]['advan']+=advan
-                                        rolls[called_socket][i]['ready']+=1
-                                        rola(rolls[called_socket][i]) 
-                                user['rolling']=0
-                                user['calling']=[]
-                                send_new_message(messagepf.replace(' ','')+'[][]'*(messagepf.replace(' ','')=='')+"\gFinalizado!",notified_socket)
-                        else:
-                            send_new_message("Confira se seu envio começa com s ou n e reenvie.",notified_socket)
-                            
-                    # Quem foi chamado
-                    else:
-                        num_rolada=len(rolls[notified_socket])-user['rolling']
-                        try:
-                            premod,posmod,advan=read_bloco(messagepf)
-                        except:
-                            send_new_message("Algo deu errado, confira seu envio e reenvie.",notified_socket)
-                            
-                        else:
-                            rolls[notified_socket][num_rolada]['p']+=premod
-                            rolls[notified_socket][num_rolada]['advan']+=advan
-                            rolls[notified_socket][num_rolada]['posmod']=posmod
-                            rolls[notified_socket][num_rolada]['ready']+=1
-                            rola(rolls[notified_socket][num_rolada])
-                            user['rolling']-=1
-                            send_new_message(messagepf.replace(' ','')+'[][]'*(messagepf.replace(' ','')=='')+"\gFinalizado! Mais "+str(user['rolling'])+' rolagens.'+(user['rolling']!=0)*'\gPróximo bloco:',notified_socket)
-                            
-            elif notified_socket in espera_de_cor:
-                cor=receive_message(notified_socket)
-                if cor is False:
-                        sockets_list.remove(notified_socket)
-                else:
-                    for client_socket in clients:
-                        send_new_message('O usuário '+espera_de_cor[notified_socket]['data']+' se juntou ao chat!',client_socket)
-                    # Save username and username header
-                    clients[notified_socket] = espera_de_cor[notified_socket]
-                    clients[notified_socket]['calling'] = []
-                    clients[notified_socket]['rolling'] = 0
-                    clients[notified_socket]['cor']=cor['data'].decode('utf-8')
-                    print('Accepted new connection from user: {}.'.format(clients[notified_socket]['data']))
-                    send_new_message(instructions,notified_socket)
-                del espera_de_cor[notified_socket]
-            else:
-                    # Client should send his name right away, receive it
-                    user = receive_message(notified_socket)
-
-                    # If False - client disconnected before he sent his name
-                    if user is False:
-                            
-                            sockets_list.remove(notified_socket)
-
-                    else:
-                        
-                        login_message='Ok'
-                        user['data']=user['data'].decode('utf-8').replace(' ','_')
-                        
-                        for socket in clients:
-                            if user['data'] in clients[socket]['data'] or clients[socket]['data'] in user['data']:
-                                login_message='Username semelhante já em uso, tente outro'
-
-                        if login_message=='Ok':
-                            if user['data']=='Server' or user['data']=='':
-                                login_message='Username não pode ser Server ou ser branco, tente outro'
-
-                        if login_message=='Ok':
-                            if '-' in user['data'] or '/' in user['data'] or '\\' in user['data']:
-                                login_message='Retire caracteres - e / e \ do username'
-                            else:
-                                espera_de_cor[notified_socket]=user
-
-                        login_message=login_message.encode('utf-8')
-                        login_message_header=f"{len(login_message):<{HEADER_LENGTH}}".encode('utf-8')
-                        notified_socket.send(login_message_header+login_message)
-
-    # It's not really necessary to have this, but will handle some socket exceptions just in case
-    for notified_socket in exception_sockets:
-
-        # Remove from list for socket.socket()
-        sockets_list.remove(notified_socket)
-
-        # Remove from our list of users
-        del clients[notified_socket]
