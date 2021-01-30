@@ -474,27 +474,29 @@ class GUI:
                 # to show chat window 
                 self.Window.deiconify() 
                 self.Window.title("CHATROOM") 
-                self.Window.resizable(width = False, 
-                                                        height = False) 
-                self.Window.configure(width = 570, 
-                                                        height = 550, 
-                                                        bg = COR_1)
+                self.Window.resizable(width = False, height = False) 
+                self.Window.configure(width = 800, height = 550, bg = COR_1)
 
-                self.labelHead = Label(self.Window, 
-                                                        bg = COR_1,
-                                                        text = self.name , 
-                                                        font = "Courier 14 bold", 
-                                                        pady = 5) 
+                self.sidebar = Frame(self.Window, bg = COR_1, width=200, height=550)
+                self.sidebar.pack(expand = False, fill = 'both', side = 'left', anchor = 'nw')
+
+                self.labelTest = Label(self.sidebar, bg = 'white', text = 'testando', font="Courier 14 bold", pady = 5)
+                self.labelTest.place(relwidth=1)
+
+
+                self.mainFrame = Frame(self.Window, bg = COR_1, width = 600, height=550)
+                self.mainFrame.pack(expand=True, fill='both', side='right')
+
+                self.labelHead = Label(self.mainFrame, bg = COR_1, text = self.name, font = "Courier 14 bold", pady = 5) 
 
                 self.labelHead.place(relwidth = 1) 
-                self.line = Label(self.Window, 
-                                                width = 450) 
+
                 
-                self.line.place(relwidth = 1, 
-                                                rely = 0.07, 
-                                                relheight = 0.012) 
+                self.line = Label(self.mainFrame, width = 450) 
                 
-                self.textCons = Text(self.Window, 
+                self.line.place(relwidth = 1, rely = 0.07, relheight = 0.012) 
+                
+                self.textCons = Text(self.mainFrame, 
                                                         width = 20, 
                                                         height = 2, 
                                                         bg = COR_1,  
@@ -502,22 +504,15 @@ class GUI:
                                                         padx = 5, 
                                                         pady = 5) 
                 
-                self.textCons.place(relheight = 0.745, 
-                                                        relwidth = 1, 
-                                                        rely = 0.08) 
+                self.textCons.place(relheight = 0.745, relwidth = 0.7, rely = 0.08) 
                 
                 self.Window.bind_all("<MouseWheel>", self.on_mousewheel)
 
-                self.labelBottom = Label(self.Window, 
-                                                                bg = COR_1, 
-                                                                height = 80) 
+                self.labelBottom = Label(self.mainFrame, bg = COR_1, height = 80) 
                 
-                self.labelBottom.place(relwidth = 1, 
-                                                        rely = 0.825) 
+                self.labelBottom.place(relwidth = 1, rely = 0.825) 
                 
-                self.entryMsg = Entry(self.labelBottom, 
-                                                        bg = COR_1, 
-                                                        font = "Courier 12") 
+                self.entryMsg = Entry(self.labelBottom, bg = COR_1, font = "Courier 12") 
                 
                 # place the given widget 
                 # into the gui window 
@@ -551,12 +546,11 @@ class GUI:
                 
                 self.textCons.config(state = DISABLED) 
 
-                self.line2 = Label(self.Window, 
-                                                width = 450)
+                self.line2 = Label(self.mainFrame, width = 450) 
 
-                self.line2.place(relwidth = 1, 
-                                                rely = 0.825, 
-                                                relheight = 0.012)
+                self.line2.place(relwidth = 1, rely = 0.07, relheight = 0.012) 
+
+
 
                 self.Window.protocol("WM_DELETE_WINDOW", self.on_closing)
         def on_mousewheel(self, event):
