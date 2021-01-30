@@ -85,46 +85,37 @@ def send_rolagem(rolagem,r,crit):
 def apply_posmod_pre(receiver,fonte,rolagem):
     for mod in fonte['posmod']:
         if mod[0]!=0:
-            if 'd' in mod[1]:
-                if '/' in mod[1]:
-                    modsepa=mod[1].split('/')
-                    for alternativa in modsepa:
-                        if 'd' in alternativa and mod[0]:
-                            rolagem['p']+=Decimal(alternativa.split('d')[0])*(int(alternativa.split('d')[1])+1)*5
-                            if random.randint(1,20)<=int(alternativa.split('d')[1]):
-                                mod[0]-=1
-                                notifi='Usado o recurso '+alternativa+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
-                                notifi=pickle.dumps(msg('Server',notifi,colore))
-                                send_new_message(notifi,receiver)
-                else:
-                    rolagem['p']+=Decimal(mod[1].split('d')[0])*(int(mod[1].split('d')[1])+1)*5
-                    if random.randint(1,20)<=int(mod[1].split('d')[1]):
-                        mod[0]-=1
-                        notifi='Usado o recurso '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
-                        notifi=pickle.dumps(msg('Server',notifi,colore))
-                        send_new_message(notifi,receiver)
+            for i in mod[1]:
+                if type(i)==tuple:
+                    if i[1]!='*':
+                        rolagem['p']+=i[0]*(i[1]+1)*50
+                        if random.randint(1,20)<=i[0]*i[1]/2:
+                            mod[0]-=1
+                            notifi='Usado o recurso '+str(i[0])+'d'+str(i[1])+' em '+str(mod)+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
+                            notifi=pickle.dumps(msg('Server',notifi,colore))
+                            send_new_message(notifi,receiver)
+                    else:
+                        rolagem['advan']+=i[0]
 
 def apply_posmod_pos(receiver,fonte,rolagem,r):
     for mod in fonte['posmod']:
         if mod[0]!=0:
-            if '/' in mod[1]:
-                modsepa=mod[1].split('/')
-                for alternativa in modsepa:
-                    if 'd' not in alternativa and mod[0]:
-                        if r<=rolagem['p'] and '-' in alternativa:
-                            if r-Decimal(alternativa)*50>rolagem['p']:
+            for i in mod[1]:
+                if type(i)==int:
+                    if r<=rolagem['p'] and i<0:
+                        if r-i*50>rolagem['p']:
                                 mod[0]-=1
-                                notifi='Usado o recurso '+alternativa+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
+                                notifi='Usado o recurso '+i+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
                                 notifi=pickle.dumps(msg('Server',notifi,colore))
                                 send_new_message(notifi,receiver)
-                                r-=Decimal(alternativa)*50
-                        elif r>rolagem['p'] and '-' not in alternativa:
-                            if r-Decimal(alternativa)*50<=rolagem['p']:
-                                mod[0]-=1
-                                notifi='Usado o recurso '+alternativa+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
-                                notifi=pickle.dumps(msg('Server',notifi,colore))
-                                send_new_message(notifi,receiver)
-                                r-=Decimal(alternativa)*50
+                                r-=i*50
+                    elif r>rolagem['p'] and i>0:
+                        if r-i*50<=rolagem['p']:
+                            mod[0]-=1
+                            notifi='Usado o recurso '+alternativa+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
+                            notifi=pickle.dumps(msg('Server',notifi,colore))
+                            send_new_message(notifi,receiver)
+                            r-=Decimal(alternativa)*50
             else:
                 if 'd' not in mod[1]:
                     if r<=rolagem['p'] and '-' in mod[1]:
@@ -150,6 +141,8 @@ def rola(rolagem):
     caller=rolagem['caller']
     recibru=rolagem['receiver']
     rolls[recibru].pop(0)
+    rolagem['p']+=(rolagem['advan']==1)*300+(rolagem['advan']==2)*500+(rolagem['advan']>2)*600
+    rolagem['p']+=-(rolagem['advan']==-1)*300-(rolagem['advan']==-2)*500-(rolagem['advan']<-2)*600
     crit=rolagem['p']/10+(rolagem['p']>rolagem['q'])*(rolagem['p']-rolagem['q'])
     apply_posmod_pre(recibru,rolagem,rolagem)
     apply_posmod_pre(caller,rolls[caller],rolagem)
@@ -219,6 +212,11 @@ while True:
 
                 # If False, client disconnected, cleanup
                 if message is False:
+                    newuser=pickle.dumps({'name': clients[notified_socket]['data']})
+                    newuser_header=f"{len(newuser):<{HEADER_LENGTH}}".encode('utf-8')
+                    for client_socket in clients:
+                        client_socket.send(newuser_header+newuser)
+                        
                     print('Closed connection from: {}.'.format(clients[notified_socket]['data']))
                     for client_socket in clients[notified_socket]['calling']:
                         notifi=clients[notified_socket]['data']+" desconectou enquanto chamava você. Você não está mais rolando."
@@ -309,8 +307,8 @@ while True:
                     if user['rolling']:
                         rolls[notified_socket][0]['posmod']=messagepf.posmod
                         if not user['calling']:
-                            rolls[notified_socket][0]['premod']+=sum(x for x in messagepf.premod if type(x)=int)
-                            rolls[notified_socket][0]['advan']+=2
+                            rolls[notified_socket][0]['p']+=50*messagepf.premod[0]
+                            rolls[notified_socket][0]['advan']+=messagepf.premod[1]
                             rolls[notified_socket][0]['ready']+=1
                             rola(rolls[called_socket][0]) 
                         else:
@@ -320,7 +318,8 @@ while True:
                                         rolls[called_socket][i]['hidden_message']=messagepf.sn
                             for called_socket in user['calling']:
                                 for i in range(len(rolls[called_socket])):
-                                    rolls[called_socket][i]['p']+=sum(x for x in messagepf.premod if type(x)==int)
+                                    rolls[called_socket][i]['p']+=50*messagepf.premod[0]
+                                    rolls[called_socket][i]['advan']+=messagepf.premod[1]
                                     rolls[called_socket][i]['ready']+=1
                                     rola(rolls[called_socket][i]) 
                         user['rolling']-=1
@@ -339,11 +338,11 @@ while True:
                         sockets_list.remove(notified_socket)
                 else:
                     cordec=cor['data'].decode('utf-8')
-                    newuser=pickle.dumps({'name': espera_de_cor[notified_socket]['data'], 'cor': cordec})
+                    newuser=pickle.dumps({'name': espera_de_cor[notified_socket]['data'], 'color': cordec})
                     newuser_header=f"{len(newuser):<{HEADER_LENGTH}}".encode('utf-8')
                     alreadyuser=[]
                     for client_socket in clients:
-                        alreadyuser.append({'name': clients[client_socket]['data'], 'cor': clients[client_socket]['cor']})
+                        alreadyuser.append({'name': clients[client_socket]['data'], 'color': clients[client_socket]['cor']})
                         client_socket.send(newuser_header+newuser)
                     # print(alreadyuser)
                     alreadyuser=pickle.dumps(alreadyuser)
@@ -372,8 +371,8 @@ while True:
                         user['data']=user['data'].decode('utf-8').replace(' ','_')
                         
                         for socket in clients:
-                            if user['data'] in clients[socket]['data'] or clients[socket]['data'] in user['data']:
-                                login_message='Username semelhante já em uso, tente outro'
+                            if clients[socket]['data']==user['data']:
+                                login_message='Username já em uso, tente outro'
 
                         if login_message=='Ok':
                             if user['data']=='Server' or user['data']=='':
