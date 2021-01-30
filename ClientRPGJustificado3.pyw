@@ -607,33 +607,37 @@ class GUI:
                                 message_length = int(message_header.decode(FORMAT).strip())
                                 message = client.recv(message_length)
                                 message=pickle.loads(message)
-                                message_final = message.sender+' > '+message.content
-                                # insert messages to text box 
-                                self.textCons.config(state = NORMAL)
-                                self.textCons.tag_configure(message.cor,foreground=message.cor)
-                                textlis=wrap(message_final,width=50)
-                                for u in range(len(textlis)):
-                                    if textlis[u].startswith('\j'):
-                                        textlis[u]=textlis[u].replace('\j','',1)
-                                        textlis[u]=textlis[u].rstrip()
-                                    else:
-                                        textlis[u]=textlis[u].strip()
-                                textlis.append('')
-                                for u in range(len(textlis)-1):
-                                    if textlis[u]=='':
-                                        self.textCons.insert(END,'\n')
-                                    elif textlis[u+1]!='' and not textlis[u+1].startswith(' '):
-                                        linha=justify(textlis[u],50)
-                                        self.textCons.insert(END, linha+'\n',message.cor)
-                                    else:
-                                        self.textCons.insert(END, textlis[u]+'\n',message.cor)
-                                self.textCons.insert(END,'\n')
-                                self.textCons.see(END)
-                                self.textCons.config(state = DISABLED) 
-                        except: 
-                                # an error will be printed on the command line or console if there's an error 
-                                client.close()
-                                sys.exit()
+                                if type(message)=='dict':
+                                    name=message['name']
+                                    cor=message['cor']
+                                else:
+                                    message_final = message.sender+' > '+message.content
+                                    # insert messages to text box 
+                                    self.textCons.config(state = NORMAL)
+                                    self.textCons.tag_configure(message.cor,foreground=message.cor)
+                                    textlis=wrap(message_final,width=50)
+                                    for u in range(len(textlis)):
+                                        if textlis[u].startswith('\j'):
+                                            textlis[u]=textlis[u].replace('\j','',1)
+                                            textlis[u]=textlis[u].rstrip()
+                                        else:
+                                            textlis[u]=textlis[u].strip()
+                                    textlis.append('')
+                                    for u in range(len(textlis)-1):
+                                        if textlis[u]=='':
+                                            self.textCons.insert(END,'\n')
+                                        elif textlis[u+1]!='' and not textlis[u+1].startswith(' '):
+                                            linha=justify(textlis[u],50)
+                                            self.textCons.insert(END, linha+'\n',message.cor)
+                                        else:
+                                            self.textCons.insert(END, textlis[u]+'\n',message.cor)
+                                    self.textCons.insert(END,'\n')
+                                    self.textCons.see(END)
+                                    self.textCons.config(state = DISABLED) 
+                            except: 
+                                    # an error will be printed on the command line or console if there's an error 
+                                    client.close()
+                                    sys.exit()
                 
         # function to send messages 
         def sendMessage(self):

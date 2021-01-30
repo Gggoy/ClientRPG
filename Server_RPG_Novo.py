@@ -337,11 +337,11 @@ while True:
                 if cor is False:
                         sockets_list.remove(notified_socket)
                 else:
+                    newuser=pickle.dumps({'name': espera_de_cor[notified_socket]['data'], 'cor': cor})
                     for client_socket in clients:
-                        notifi='O usuário '+espera_de_cor[notified_socket]['data']+' se juntou ao chat!'
-                        notifi=pickle.dumps(msg('Server',notifi,colore))
-                        send_new_message(notifi,client_socket)
-                    # Save username and username header
+                        newuser_header=f"{len(new_user):<{HEADER_LENGTH}}".encode('utf-8')
+                        client_socket.send(newuser_header+newuser)
+                    # Save username and username header                        
                     clients[notified_socket] = espera_de_cor[notified_socket]
                     clients[notified_socket]['calling'] = []
                     clients[notified_socket]['rolling'] = 0
