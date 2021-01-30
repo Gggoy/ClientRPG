@@ -49,12 +49,8 @@ rolls={}
 
 instructions='\kComandos:\n*Rolar dados.\\nExemplo: "-dice -3+5d6-3-7d8+2"\n*Iniciativa. Retorna uma sequência randomizada e uniformemente espaçada de Ups e Downs: Caso o número de integrantes de cada grupo seja igual, antes determinem quem será Up e quem será Down.\\nExemplo: "-init 5x4" (Combate de 4 contra 5)\\n***OBS. Os comandos devem começar imediatamente com a chave, porém subsequentes usos de espaço são irrelevantes, a não ser em mensagens privadas, onde são mantidos***' 
 
-send_options=['-me','-you','-we','-hidden']
-
 print(f'Listening for connections on {IP}:{PORT}...')
 
-username = 'Server'.encode('utf-8')
-username_header = f"{len(username):<{HEADER_LENGTH}}".encode('utf-8')
 colore='#ffffff'
 
 def send_new_message(notifi,client_socket):
