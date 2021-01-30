@@ -470,89 +470,63 @@ class GUI:
         # The main layout of the chat 
         def layout(self,name): 
                 
-                self.name = name 
-                # to show chat window 
-                self.Window.deiconify() 
-                self.Window.title("CHATROOM") 
-                self.Window.resizable(width = False, height = False) 
-                self.Window.configure(width = 800, height = 550, bg = COR_1)
-
-                self.sidebar = Frame(self.Window, bg = COR_1, width=200, height=550)
-                self.sidebar.pack(expand = False, fill = 'both', side = 'left', anchor = 'nw')
-
-                self.labelTest = Label(self.sidebar, bg = 'white', text = 'testando', font="Courier 14 bold", pady = 5)
-                self.labelTest.place(relwidth=1)
-
-
-                self.mainFrame = Frame(self.Window, bg = COR_1, width = 600, height=550)
-                self.mainFrame.pack(expand=True, fill='both', side='right')
-
-                self.labelHead = Label(self.mainFrame, bg = COR_1, text = self.name, font = "Courier 14 bold", pady = 5) 
-
-                self.labelHead.place(relwidth = 1) 
-
+                # chat window which is currently hidden 
+                self.Window = Tk() 
+                self.Window.withdraw() 
                 
-                self.line = Label(self.mainFrame, width = 450) 
+                # login window 
+                self.login = Toplevel() 
+                # set the title 
+                self.login.title("Login") 
+                self.login.resizable(width = False, 
+                                                        height = False) 
+                self.login.configure(width = 700, 
+                                                        height = 300) 
+                # create a Label 
+                self.pls = Label(self.login, 
+                                        text = "Please login to continue", 
+                                        justify = CENTER,
+                                        font = "Courier 14 bold") 
                 
-                self.line.place(relwidth = 1, rely = 0.07, relheight = 0.012) 
+                self.pls.place(relheight = 0.15, 
+                                        relx = 0.5, 
+                                        rely = 0.09,
+                                        anchor=CENTER)
                 
-                self.textCons = Text(self.mainFrame, 
-                                                        width = 20, 
-                                                        height = 2, 
-                                                        bg = COR_1,  
-                                                        font = "Courier 14", 
-                                                        padx = 5, 
-                                                        pady = 5) 
+                # create a Label 
+                self.labelName = Label(self.login, 
+                                                        text = "Username: ",
+                                                        font = "Courier 14") 
                 
-                self.textCons.place(relheight = 0.745, relwidth = 0.7, rely = 0.08) 
+                self.labelName.place(relheight = 0.2, 
+                                                        relx = 0.25, 
+                                                        rely = 0.16) 
                 
-                self.Window.bind_all("<MouseWheel>", self.on_mousewheel)
+                # create a entry box for 
+                # typing the message 
+                self.entryName = Entry(self.login, 
+                                                        font = "Courier 14") 
+                
+                self.entryName.place(relwidth = 0.3, 
+                                                        relheight = 0.12, 
+                                                        relx = 0.45, 
+                                                        rely = 0.2) 
+                
+                # set the focus of the curser 
+                self.entryName.focus() 
+                
+                # create a Continue Button 
+                # along with action 
+                self.go = Button(self.login, 
+                                                text = "CONTINUE", 
+                                                font = "Courier 14 bold", 
+                                                command = lambda: self.goAhead(self.entryName.get())) 
 
-                self.labelBottom = Label(self.mainFrame, bg = COR_1, height = 80) 
-                
-                self.labelBottom.place(relwidth = 1, rely = 0.825) 
-                
-                self.entryMsg = Entry(self.labelBottom, bg = COR_1, font = "Courier 12") 
-                
-                # place the given widget 
-                # into the gui window 
-                self.entryMsg.place(relwidth = 0.74, 
-                                                        relheight = 0.06, 
-                                                        rely = 0.008, 
-                                                        relx = 0.011) 
-                
-                self.entryMsg.focus() 
-                
-                # create a Send Button 
-                self.buttonMsg = Button(self.labelBottom, 
-                                                                text = "Send", 
-                                                                font = "Courier 12 bold", 
-                                                                width = 20, 
-                                                                bg = COR_1,
-                                                                command = lambda : self.sendButton(self.entryMsg.get())) 
-                
-                self.Window.bind('<Return>',(lambda event: self.sendButton(self.entryMsg.get())))
-
-                self.Window.bind("<Up>",self.up_down)
-
-                self.Window.bind("<Down>",self.up_down)
-
-                self.buttonMsg.place(relx = 0.77, 
-                                                        rely = 0.008, 
-                                                        relheight = 0.06, 
-                                                        relwidth = 0.22) 
-                
-                self.textCons.config(cursor = "arrow") 
-                
-                self.textCons.config(state = DISABLED) 
-
-                self.line2 = Label(self.mainFrame, width = 450) 
-
-                self.line2.place(relwidth = 1, rely = 0.07, relheight = 0.012) 
-
-
-
-                self.Window.protocol("WM_DELETE_WINDOW", self.on_closing)
+                self.entryName.bind('<Return>',(lambda event: self.goAhead(self.entryName.get())))
+                self.login.protocol("WM_DELETE_WINDOW", self.on_closing)  
+                self.go.place(relx = 0.4, 
+                                        rely = 0.55) 
+                self.Window.mainloop() 
         def on_mousewheel(self, event):
             self.textCons.yview_scroll(-1*int(event.delta/120), "units")
 
