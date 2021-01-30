@@ -532,21 +532,32 @@ class GUI:
                 
                 # create a Send Button 
                 self.buttonMsg = Button(self.labelBottom, 
-                                                                text = "Send", 
-                                                                font = "Courier 12 bold", 
-                                                                width = 20, 
-                                                                bg = COR_1,
-                                                                command = lambda : self.sendButton(self.entryMsg.get())) 
+                                                            text = "Send", 
+                                                            font = "Courier 12 bold", 
+                                                            width = 10, 
+                                                            bg = COR_1,
+                                                            command = lambda : self.sendButton(self.entryMsg.get())) 
                 self.buttonMsg.place(relx = 0.77, 
-                                                        rely = 0.008, 
-                                                        relheight = 0.06, 
-                                                        relwidth = 0.22) 
+                                                    rely = 0.008, 
+                                                    relheight = 0.03, 
+                                                    relwidth = 0.11) 
                 
+                self.rollBtt = Button(self.labelBottom, 
+                                                        text = "Roll", 
+                                                        font = "Courier 12 bold", 
+                                                        width = 10, 
+                                                        bg = COR_1)
+                                                        #command = lambda : self.sendButton(self.entryMsg.get())) 
+                self.rollBtt.place(relx = 0.88, 
+                                                rely = 0.042, 
+                                                relheight = 0.03, 
+                                                relwidth = 0.11) 
+
                 self.textCons.config(cursor = "arrow") 
                 self.textCons.config(state = DISABLED) 
 
-                self.line2 = Label(self.mainFrame, width = 450) 
-                self.line2.place(relwidth = 1, rely = 0.07, relheight = 0.012) 
+                self.line2 = Label(self.mainFrame)                 
+                self.line2.place(relwidth = 1, rely = 0.825, relheight = 0.012) 
 
 
                 self.Window.bind_all("<MouseWheel>", self.on_mousewheel)
@@ -577,7 +588,8 @@ class GUI:
 
         def changecolor(self,i):
             global colors
-            self.buttonMsg.config(fg=colors[(i-9)%100])
+            self.buttonMsg.config(fg=colors[(i-8)%100])
+            self.rollBtt.config(bg=colors[(i-10)%100])
             self.entryMsg.config(fg=colors[(i-9)%100])
             self.labelHead.config(fg=colors[i])
             self.line.config(bg=colors[(i-2)%100])
