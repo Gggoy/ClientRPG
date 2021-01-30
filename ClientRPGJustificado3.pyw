@@ -16,7 +16,6 @@ red=Color('#ff0000')
 violet=Color('#ff00ff')
 colors = list(red.range_to(violet,50))
 colors=colors+list(violet.range_to(red,50))
-namer=''
 
 __all__ = ['TextWrapper', 'wrap', 'fill', 'dedent', 'indent', 'shorten']
 
@@ -451,13 +450,10 @@ class GUI:
                 server_message_length = int(server_message_header.decode(FORMAT).strip())
                 server_message=client.recv(server_message_length).decode(FORMAT)
                 if server_message=='Ok':
-                        global namer
-                        namer=name
                         try:
                             color=askcolor(title ="Escolha a cor do seu usuário")[1].encode(FORMAT)
                         except:
-                            client.close()
-                            sys.exit()
+                            self.on_closing()
                         colour=color
                         color_header=f"{len(color):<{HEADER_LENGTH}}".encode(FORMAT)
                         client.send(color_header + color)
@@ -580,8 +576,7 @@ class GUI:
                         time.sleep(0.5)
                         self.changecolor(i)
             except:
-                client.close()
-                sys.exit()
+                self.on_closing()
 
         def changecolor(self,i):
             global colors
@@ -607,10 +602,7 @@ class GUI:
                                 message_length = int(message_header.decode(FORMAT).strip())
                                 message = client.recv(message_length)
                                 message=pickle.loads(message)
-                                if type(data).__name__=='dict':
-                                    name=message['name']
-                                    cor=message['cor']
-                                else:
+                                if type(message).__name__=='msg':
                                     message_final = message.sender+' > '+message.content
                                     # insert messages to text box 
                                     self.textCons.config(state = NORMAL)
@@ -633,17 +625,23 @@ class GUI:
                                             self.textCons.insert(END, textlis[u]+'\n',message.cor)
                                     self.textCons.insert(END,'\n')
                                     self.textCons.see(END)
-                                    self.textCons.config(state = DISABLED) 
-                            except: 
+                                    self.textCons.config(state = DISABLED)
+                                elif type(message).__name__=='dict':
+                                    name=message['name']
+                                    cor=message['cor']
+                                else:
+                                    for dics in message:
+                                        name=dics['name']
+                                        cor=dics['cor']
+                        except: 
                                     # an error will be printed on the command line or console if there's an error 
-                                    client.close()
-                                    sys.exit()
+                                    self.on_closing()
                 
         # function to send messages 
         def sendMessage(self):
                 self.textCons.config(state=DISABLED)
                 while True:
-                        message_sent = pickle.dumps(msg(namer,self.msg))
+                        message_sent = pickle.dumps(msg(self.name,self.msg))
                         message_sent_header = f"{len(message_sent):<{HEADER_LENGTH}}".encode(FORMAT)
                         client.send(message_sent_header+message_sent)    
                         break   

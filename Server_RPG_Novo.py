@@ -340,11 +340,13 @@ while True:
                     cordec=cor['data'].decode('utf-8')
                     newuser=pickle.dumps({'name': espera_de_cor[notified_socket]['data'], 'cor': cordec})
                     newuser_header=f"{len(newuser):<{HEADER_LENGTH}}".encode('utf-8')
+                    alreadyuser=[]
                     for client_socket in clients:
-                        alreadyuser=pickle.dumps({'name': client_socket['data'], 'cor': client_socket['cor']})
-                        auser_header=f"{len(alreadyuser):<{HEADER_LENGTH}}".encode('utf-8')
+                        alreadyuser.append({'name': client_socket['data'], 'cor': client_socket['cor']})
                         client_socket.send(newuser_header+newuser)
-                        notified_socket.send(auser_header+alreadyuser)
+                    alreadyuser=pickle.dumps(alreadyuser)
+                    auser_header=f"{len(alreadyuser):<{HEADER_LENGTH}}".encode('utf-8')
+                    notified_socket.send(auser_header+alreadyuser)
                     # Save username and username header                        
                     clients[notified_socket] = espera_de_cor[notified_socket]
                     clients[notified_socket]['calling'] = []
