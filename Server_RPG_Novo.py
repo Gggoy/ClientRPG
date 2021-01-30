@@ -46,12 +46,12 @@ clients = {}
 espera_de_cor={}
 
 rolls={}
-
-instructions='\kComandos:\n*Rolar dados.\\nExemplo: "-dice -3+5d6-3-7d8+2"\n*Iniciativa. Retorna uma sequência randomizada e uniformemente espaçada de Ups e Downs: Caso o número de integrantes de cada grupo seja igual, antes determinem quem será Up e quem será Down.\\nExemplo: "-init 5x4" (Combate de 4 contra 5)\\n***OBS. Os comandos devem começar imediatamente com a chave, porém subsequentes usos de espaço são irrelevantes, a não ser em mensagens privadas, onde são mantidos***' 
-
+        
 print(f'Listening for connections on {IP}:{PORT}...')
 
 colore='#ffffff'
+instructions='\kComandos:\n*Rolar dados.\\nExemplo: "-dice -3+5d6-3-7d8+2"\n*Iniciativa. Retorna uma sequência randomizada e uniformemente espaçada de Ups e Downs: Caso o número de integrantes de cada grupo seja igual, antes determinem quem será Up e quem será Down.\\nExemplo: "-init 5x4" (Combate de 4 contra 5)\\n***OBS. Os comandos devem começar imediatamente com a chave, porém subsequentes usos de espaço são irrelevantes, a não ser em mensagens privadas, onde são mantidos***' 
+instructions=pickle.dumps(msg('Server',instructions,colore))
 
 def send_new_message(notifi,client_socket):
     notifi_header = f"{len(notifi):<{HEADER_LENGTH}}".encode('utf-8')
@@ -66,6 +66,7 @@ def send_rolagem(rolagem,r,crit):
         notifi='Fracasso\gNet Advantage: '+str(rolagem['advan'])
     notifi+=rolagem['res']*('\gInfo: '+str(round(20-20*r/rolagem['q'],2))+' de '+str(round(20-20*rolagem['p']/rolagem['q'],2)))+"\gRolagem de "+clients[rolagem['receiver']]['data']
     print(notifi+' e '+clients[rolagem['caller']]['data'])
+    notifi=pickle.dumps(msg('Server',notifi,colore))
     if rolagem['send_type']=='-me':
         send_new_message(notifi,rolagem['caller'])
     elif rolagem['send_type']=='-you':
@@ -76,7 +77,9 @@ def send_rolagem(rolagem,r,crit):
     else:
         opposite_message=(rolagem['hidden_message']=='n')*'Sim.'+(rolagem['hidden_message']=='s')*'Não.'
         rolagem['hidden_message']=(rolagem['hidden_message']=='s')*'Sim.'+(rolagem['hidden_message']=='n')*'Não.'
-        send_new_message((r<=rolagem['p'])*rolagem['hidden_message']+(r>rolagem['p'])*opposite_message+'\gNet Advantage: '+str(rolagem['advan']),rolagem['receiver'])
+        notifi=(r<=rolagem['p'])*rolagem['hidden_message']+(r>rolagem['p'])*opposite_message+'\gNet Advantage: '+str(rolagem['advan'])
+        notifi=pickle.dumps(msg('Server',notifi,colore))
+        send_new_message(notifi,rolagem['receiver'])
         print((r<=rolagem['p'])*rolagem['hidden_message']+(r>rolagem['p'])*opposite_message)
 
 def apply_posmod_pre(receiver,fonte,rolagem):
@@ -90,7 +93,9 @@ def apply_posmod_pre(receiver,fonte,rolagem):
                             rolagem['p']+=Decimal(alternativa.split('d')[0])*(int(alternativa.split('d')[1])+1)*5
                             if random.randint(1,20)<=int(alternativa.split('d')[1]):
                                 mod[0]-=1
-                                send_new_message('Usado o recurso '+alternativa+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.',receiver)
+                                notifi='Usado o recurso '+alternativa+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
+                                notifi=pickle.dumps(msg('Server',notifi,colore))
+                                send_new_message(notifi,receiver)
                 else:
                     rolagem['p']+=Decimal(mod[1].split('d')[0])*(int(mod[1].split('d')[1])+1)*5
                     if random.randint(1,20)<=int(mod[1].split('d')[1]):
@@ -351,84 +356,6 @@ while True:
         # Remove from our list of users
         del clients[notified_socket]
 
-
-        elif messagepf.startswith('-dice'):
-                        messagepf=messagepf.replace(' ','')
-                        messagepf=messagepf.replace('-dice','')
-                        messagepf=messagepf.replace('-','+-')
-                        soma=0
-                        somap='a'
-                        dice_box=''
-                        try:
-                            dice_upper_list=messagepf.split('+')
-                            for j in range(len(dice_upper_list)):
-                                u=dice_upper_list[j]
-                                if u!='':
-                                    dice_list=u.split('d')
-                                    if len(dice_list)==2:
-                                        dice_box+=' \g'
-                                        somap=0
-                                        litbox='[ '
-                                        for i in range(abs(int(dice_list[0]))):
-                                            d=random.randint(1,abs(int(dice_list[1])))
-                                            if '-' not in u:
-                                                somap+=d
-                                                litbox+='+'+str(d)+' '
-                                            else:
-                                                somap-=d
-                                                litbox+='-'+str(d)+' '
-                                        litbox+=']'
-                                        dice_box+=litbox
-                                        soma+=somap
-                                        if j+1<len(dice_upper_list):
-                                            if 'd' in dice_upper_list[j+1]: 
-                                                dice_box+=' = '+'+'*(somap>=0)+str(somap)
-                                    else:
-                                        soma+=int(dice_list[0])
-                                        dice_box+=' '+'+'*('-' not in u)+dice_list[0]
-                                        if somap!='a':
-                                                somap+=int(dice_list[0])
-                                                if j+1<len(dice_upper_list):
-                                                    if 'd' in dice_upper_list[j+1]: 
-                                                        dice_box+=' = '+'+'*(somap>=0)+str(somap)
-                                                else:
-                                                    dice_box+=' = '+'+'*(somap>=0)+str(somap)
-                            if dice_box.endswith(']'):
-                                dice_box+=' = '+'+'*(somap>=0)+str(somap)
-                            messagepf=messagepf.replace('+-','-')
-                            if dice_box.startswith(' ') and not dice_box.startswith(' \g'):
-                                dice_box=dice_box[1:]
-                                dice_box=' \g'+dice_box
-                            send_new_message(messagepf+':'+dice_box+' \gTotal: '+str(soma),notified_socket)
-                            print(clients[notified_socket]['data']+' rolou: '+messagepf+':'+dice_box+' \gTotal: '+str(soma))
-                        except:
-                            send_new_message("Algo deu errado, confira seu envio e reenvie.",notified_socket)
-                    elif messagepf.startswith('-init'):
-                        try:
-                            messagepf=messagepf.replace(' ','')
-                            messagepf=messagepf.replace('-init','')
-                            a=int(messagepf.split('x')[0])
-                            b=int(messagepf.split('x')[1])
-                            if a<b:
-                                a,b=b,a
-                            lis_b=[0]*b
-                            i=0
-                            st=''
-                            for u in range(int(a//b+1)):
-                                for j in range(b):
-                                    if i==a:
-                                        break
-                                    i+=1
-                                    lis_b[j]+=1
-                            while len(lis_b):
-                                j=random.randint(0,len(lis_b)-1)
-                                ind=lis_b.pop(j)
-                                st+='▘'+ind*'▖'
-                            ordem=random.randint(0,len(st)-1)
-                            st=st[ordem:len(st)]+st[0:ordem]
-                            for client_socket in clients:
-                                send_new_message("Ordem de iniciativa de "+str(a)+' ▞ '+str(b)+' >\n'+str(st),client_socket)
-                        except:
-                            send_new_message("Algo deu errado, confira seu envio e reenvie.",notified_socket)
+            
 
 
