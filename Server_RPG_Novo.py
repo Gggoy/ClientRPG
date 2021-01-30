@@ -344,6 +344,7 @@ while True:
                     for client_socket in clients:
                         alreadyuser.append({'name': client_socket['data'], 'cor': client_socket['cor']})
                         client_socket.send(newuser_header+newuser)
+                    # print(alreadyuser)
                     alreadyuser=pickle.dumps(alreadyuser)
                     auser_header=f"{len(alreadyuser):<{HEADER_LENGTH}}".encode('utf-8')
                     notified_socket.send(auser_header+alreadyuser)

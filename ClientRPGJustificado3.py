@@ -454,10 +454,10 @@ class GUI:
                             color=askcolor(title ="Escolha a cor do seu usuário")[1].encode(FORMAT)
                         except:
                             self.on_closing()
-                        colour=color
                         color_header=f"{len(color):<{HEADER_LENGTH}}".encode(FORMAT)
                         client.send(color_header + color)
                         self.login.destroy()
+                        self.receive()
                         self.layout(name)
                         # the thread to receive messages 
                         rcv = threading.Thread(target=self.receive) 
@@ -591,11 +591,12 @@ class GUI:
         # function to receive messages 
         def receive(self): 
                 while True: 
-                        try:
+                        # try:
                                 message_header = client.recv(HEADER_LENGTH)
                                 message_length = int(message_header.decode(FORMAT).strip())
                                 message = client.recv(message_length)
                                 message=pickle.loads(message)
+                                # print(message)
                                 if type(message).__name__=='msg':
                                     message_final = message.sender+' > '+message.content
                                     # insert messages to text box 
@@ -624,12 +625,15 @@ class GUI:
                                     name=message['name']
                                     cor=message['cor']
                                 else:
+                                    self.players = {}
                                     for dics in message:
-                                        name=dics['name']
-                                        cor=dics['cor']
-                        except: 
-                                    # an error will be printed on the command line or console if there's an error 
-                                    self.on_closing()
+                                        self.players[dics['name']] = dics['cor']
+
+                                    print(self.players)
+                                    break
+                        # except: 
+                        #             # an error will be printed on the command line or console if there's an error 
+                        #             self.on_closing()
                 
         # function to send messages 
         def sendMessage(self):
