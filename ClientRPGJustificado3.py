@@ -445,7 +445,9 @@ class GUI:
 
         def createSidebarButtons(self):
             for playerBtt in self.playerBtts:
-                self.sidebar.delete(playerBtt)
+                playerBtt.pack_forget()
+
+            self.playerBtts = []
 
             for i in range(len(self.players)):
                 tempButton = Button(self.sidebar,
@@ -554,7 +556,7 @@ class GUI:
                 self.Window.bind("<Down>",self.up_down)
                 self.Window.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-                
+
         def on_mousewheel(self, event):
             self.textCons.yview_scroll(-1*int(event.delta/120), "units")
 
@@ -624,8 +626,9 @@ class GUI:
                                     self.textCons.see(END)
                                     self.textCons.config(state = DISABLED)
                                 elif type(message).__name__=='dict':
-                                    name=message['name']
-                                    cor=message['cor']
+                                    print(message)
+                                    self.players.append({'name': message['name'], 'color': message['cor']})
+                                    self.createSidebarButtons()
                                 else:
                                     self.players = []
                                     for dics in message:
