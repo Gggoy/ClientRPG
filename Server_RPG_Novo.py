@@ -88,14 +88,27 @@ def apply_posmod_pre(receiver,fonte,rolagem):
             for i in mod[1]:
                 if type(i)==tuple:
                     if i[1]!='*':
-                        rolagem['p']+=i[0]*(i[1]+1)*50
-                        if random.randint(1,20)<=i[0]*i[1]/2:
-                            mod[0]-=1
-                            notifi='Usado o recurso '+str(i[0])+'d'+str(i[1])+' em '+str(mod)+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
-                            notifi=pickle.dumps(msg('Server',notifi,colore))
-                            send_new_message(notifi,receiver)
+                        if i[0]!=0:
+                            rolagem['p']+=i[0]*(i[1]+1)*50
+                            if random.randint(1,20)<=i[0]*i[1]/2:
+                                mod[0]-=1
+                                notifi='Usado o recurso '+str(i[0])+'d'+str(i[1])+' em '+str(mod[1])+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'. Restam '+str(mod[0])+' desse recurso'
+                                notifi=pickle.dumps(msg('Server',notifi,colore))
+                                send_new_message(notifi,receiver)
+                        else:
+                            rolagem['p']+=i[1]*50
+                            if random.randint(1,40)<=i[1]:
+                                mod[0]-=1
+                                notifi='Usado o recurso '+str(i[1])+' em '+str(mod[1])+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
+                                notifi=pickle.dumps(msg('Server',notifi,colore))
+                                send_new_message(notifi,receiver)
+
                     else:
                         rolagem['advan']+=i[0]
+                        mod[0]-=1
+                        notifi='Usado o recurso '+str(i[0])+'*Advantage em '+str(mod[1])+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
+                        notifi=pickle.dumps(msg('Server',notifi,colore))
+                        send_new_message(notifi,receiver)
 
 def apply_posmod_pos(receiver,fonte,rolagem,r):
     for mod in fonte['posmod']:
@@ -125,11 +138,11 @@ def rola(rolagem):
     caller=rolagem['caller']
     recibru=rolagem['receiver']
     rolls[recibru].pop(0)
+    apply_posmod_pre(recibru,rolagem,rolagem)
+    apply_posmod_pre(caller,rolls[caller],rolagem)
     rolagem['p']+=(rolagem['advan']==1)*300+(rolagem['advan']==2)*500+(rolagem['advan']>2)*600
     rolagem['p']+=-(rolagem['advan']==-1)*300-(rolagem['advan']==-2)*500-(rolagem['advan']<-2)*600
     crit=rolagem['p']/10+(rolagem['p']>rolagem['q'])*(rolagem['p']-rolagem['q'])
-    apply_posmod_pre(recibru,rolagem,rolagem)
-    apply_posmod_pre(caller,rolls[caller],rolagem)
     r=random.randint(1,rolagem['q'])
     r=apply_posmod_pos(recibru,rolagem,rolagem,r)
     r=apply_posmod_pos(caller,rolls[caller],rolagem,r)
@@ -238,6 +251,7 @@ while True:
                 if type(messagepf).__name__=='msg':
                     messagepf.cor=user['cor']
                     if not messagepf.destiny:
+                        messagepf.sender=user['data']
                         message['data']=pickle.dumps(messagepf)
                         message["header"]=f"{len(message['data']):<{HEADER_LENGTH}}".encode('utf-8')
                         for client_socket in clients:
