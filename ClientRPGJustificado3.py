@@ -438,6 +438,26 @@ class GUI:
                                         rely = 0.55) 
                 self.Window.mainloop() 
 
+        def onPlayerClick(self, this):
+            colors = (this.cget('bg'), this.cget('fg'))
+            # print(colors)
+            this.config(bg=colors[1], fg=colors[0])
+
+        def createSidebarButtons(self):
+            for playerBtt in self.playerBtts:
+                playerBtt.pack_forget()
+
+            self.playerBtts = []
+
+            for i in range(len(self.players)):
+                tempButton = Button(self.sidebar,
+                                    fg = self.players[i]['color'],
+                                    bg = 'black', text = self.players[i]['name'],
+                                    font = "Courier 14 bold",
+                                    command=lambda c=i: self.playerBtts[c].config(bg=self.playerBtts[c].cget('fg'), fg=self.playerBtts[c].cget('bg')))
+                self.playerBtts.append(tempButton)
+                self.playerBtts[-1].place(relwidth=1, relheight=0.1, rely = 0.1*(len(self.playerBtts)-1))
+
         def on_closing(self):
                 client.close()
                 sys.exit()
@@ -480,26 +500,16 @@ class GUI:
                 self.sidebar = Frame(self.Window, bg = COR_1, width=200, height=550)
                 self.sidebar.pack(expand = False, fill = 'both', side = 'left', anchor = 'nw')
 
-
                 self.playerBtts = []
-                for player in self.players:
-                    tempBtt = Button(self.sidebar, bg = player['color'], fg = 'black', text = player['name'], font = "Courier 14 bold")
-                    self.playerBtts.append(tempBtt)
-                    self.playerBtts[-1].place(relwidth=1, relheight=0.1, rely = 0.1*(len(self.playerBtts)-1))
-                # self.labelTest = Label(self.sidebar, bg = 'white', text = 'testando', font="Courier 14 bold", pady = 5)
-                # self.labelTest.place(relwidth=1)
-
+                self.createSidebarButtons()
 
                 self.mainFrame = Frame(self.Window, bg = COR_1, width = 600, height=550)
                 self.mainFrame.pack(expand=True, fill='both', side='right')
 
                 self.labelHead = Label(self.mainFrame, bg = COR_1, text = self.name, font = "Courier 14 bold", pady = 5) 
-
                 self.labelHead.place(relwidth = 1) 
 
-                
-                self.line = Label(self.mainFrame, width = 450) 
-                
+                self.line = Label(self.mainFrame, width = 450)                 
                 self.line.place(relwidth = 1, rely = 0.07, relheight = 0.012) 
                 
                 self.textCons = Text(self.mainFrame, 
@@ -509,24 +519,16 @@ class GUI:
                                                         font = "Courier 14", 
                                                         padx = 5, 
                                                         pady = 5) 
-                
                 self.textCons.place(relheight = 0.745, relwidth = 1, rely = 0.08) 
                 
-                self.Window.bind_all("<MouseWheel>", self.on_mousewheel)
-
-                self.labelBottom = Label(self.mainFrame, bg = COR_1, height = 80) 
-                
+                self.labelBottom = Label(self.mainFrame, bg = COR_1, height = 80)     
                 self.labelBottom.place(relwidth = 1, rely = 0.825) 
                 
                 self.entryMsg = Entry(self.labelBottom, bg = COR_1, font = "Courier 12") 
-                
-                # place the given widget 
-                # into the gui window 
                 self.entryMsg.place(relwidth = 0.74, 
                                                         relheight = 0.06, 
                                                         rely = 0.008, 
                                                         relx = 0.011) 
-                
                 self.entryMsg.focus() 
                 
                 # create a Send Button 
@@ -536,29 +538,25 @@ class GUI:
                                                                 width = 20, 
                                                                 bg = COR_1,
                                                                 command = lambda : self.sendButton(self.entryMsg.get())) 
-                
-                self.Window.bind('<Return>',(lambda event: self.sendButton(self.entryMsg.get())))
-
-                self.Window.bind("<Up>",self.up_down)
-
-                self.Window.bind("<Down>",self.up_down)
-
                 self.buttonMsg.place(relx = 0.77, 
                                                         rely = 0.008, 
                                                         relheight = 0.06, 
                                                         relwidth = 0.22) 
                 
                 self.textCons.config(cursor = "arrow") 
-                
                 self.textCons.config(state = DISABLED) 
 
                 self.line2 = Label(self.mainFrame, width = 450) 
-
                 self.line2.place(relwidth = 1, rely = 0.07, relheight = 0.012) 
 
 
-
+                self.Window.bind_all("<MouseWheel>", self.on_mousewheel)
+                self.Window.bind('<Return>',(lambda event: self.sendButton(self.entryMsg.get())))
+                self.Window.bind("<Up>",self.up_down)
+                self.Window.bind("<Down>",self.up_down)
                 self.Window.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+
         def on_mousewheel(self, event):
             self.textCons.yview_scroll(-1*int(event.delta/120), "units")
 
@@ -628,8 +626,9 @@ class GUI:
                                     self.textCons.see(END)
                                     self.textCons.config(state = DISABLED)
                                 elif type(message).__name__=='dict':
-                                    name=message['name']
-                                    cor=message['cor']
+                                    print(message)
+                                    self.players.append({'name': message['name'], 'color': message['cor']})
+                                    self.createSidebarButtons()
                                 else:
                                     self.players = []
                                     for dics in message:
