@@ -438,6 +438,11 @@ class GUI:
                                         rely = 0.55) 
                 self.Window.mainloop() 
 
+        def onPlayerClick(self, this):
+            colors = (this.cget('bg'), this.cget('fg'))
+            # print(colors)
+            this.config(bg=colors[1], fg=colors[0])
+
         def on_closing(self):
                 client.close()
                 sys.exit()
@@ -482,9 +487,9 @@ class GUI:
 
 
                 self.playerBtts = []
-                for player in self.players:
-                    tempBtt = Button(self.sidebar, bg = player['color'], fg = 'black', text = player['name'], font = "Courier 14 bold")
-                    self.playerBtts.append(tempBtt)
+                for i in range(len(self.players)):
+                    tempButton = Button(self.sidebar, fg = self.players[i]['color'], bg = 'black', text = self.players[i]['name'], font = "Courier 14 bold", command=lambda c=i: self.playerBtts[c].config(bg=self.playerBtts[c].cget('fg'), fg=self.playerBtts[c].cget('bg')))
+                    self.playerBtts.append(tempButton)
                     self.playerBtts[-1].place(relwidth=1, relheight=0.1, rely = 0.1*(len(self.playerBtts)-1))
                 # self.labelTest = Label(self.sidebar, bg = 'white', text = 'testando', font="Courier 14 bold", pady = 5)
                 # self.labelTest.place(relwidth=1)
