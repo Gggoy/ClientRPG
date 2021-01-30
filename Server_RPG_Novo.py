@@ -309,7 +309,8 @@ while True:
                     if user['rolling']:
                         rolls[notified_socket][0]['posmod']=messagepf.posmod
                         if not user['calling']:
-                            rolls[notified_socket][0]['premod']=messagepf.premod
+                            rolls[notified_socket][0]['premod']+=sum(x for x in messagepf.premod if type(x)=int)
+                            rolls[notified_socket][0]['advan']+=2
                             rolls[notified_socket][0]['ready']+=1
                             rola(rolls[called_socket][0]) 
                         else:
@@ -319,7 +320,7 @@ while True:
                                         rolls[called_socket][i]['hidden_message']=messagepf.sn
                             for called_socket in user['calling']:
                                 for i in range(len(rolls[called_socket])):
-                                    rolls[called_socket][i]['p']+=messagepf.premod
+                                    rolls[called_socket][i]['p']+=sum(x for x in messagepf.premod if type(x)==int)
                                     rolls[called_socket][i]['ready']+=1
                                     rola(rolls[called_socket][i]) 
                         user['rolling']-=1
