@@ -445,7 +445,7 @@ class GUI:
 
         def createSidebarButtons(self):
             for playerBtt in self.playerBtts:
-                playerBtt.pack_forget()
+                playerBtt.destroy()
 
             self.playerBtts = []
 
@@ -627,16 +627,26 @@ class GUI:
                                     self.textCons.config(state = DISABLED)
                                 elif type(message).__name__=='dict':
                                     print(message)
-                                    self.players.append({'name': message['name'], 'color': message['cor']})
+                                    playerFlag = True
+                                    for i in range(len(self.players)):
+                                        if self.players[i]['name'] == message['name']:
+                                            print("if")
+                                            self.players.pop(i)
+                                            playerFlag = False
+                                            print(self.players)
+                                            break
+                                    if playerFlag:
+                                        self.players.append(message)
+                                    
                                     self.createSidebarButtons()
                                 else:
                                     self.players = []
                                     for dics in message:
-                                        self.players.append({'name': dics['name'], 'color': dics['cor']})
+                                        self.players.append(dics)
 
                                     print(self.players)
                                     break
-                        # except: 
+                        # except:   
                         #             # an error will be printed on the command line or console if there's an error 
                         #             self.on_closing()
                 
