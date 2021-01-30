@@ -480,8 +480,14 @@ class GUI:
                 self.sidebar = Frame(self.Window, bg = COR_1, width=200, height=550)
                 self.sidebar.pack(expand = False, fill = 'both', side = 'left', anchor = 'nw')
 
-                self.labelTest = Label(self.sidebar, bg = 'white', text = 'testando', font="Courier 14 bold", pady = 5)
-                self.labelTest.place(relwidth=1)
+
+                self.playerBtts = []
+                for player in self.players:
+                    tempBtt = Button(self.sidebar, bg = player['color'], fg = 'black', text = player['name'], font = "Courier 14 bold")
+                    self.playerBtts.append(tempBtt)
+                    self.playerBtts[-1].place(relwidth=1, relheight=0.1, rely = 0.1*(len(self.playerBtts)-1))
+                # self.labelTest = Label(self.sidebar, bg = 'white', text = 'testando', font="Courier 14 bold", pady = 5)
+                # self.labelTest.place(relwidth=1)
 
 
                 self.mainFrame = Frame(self.Window, bg = COR_1, width = 600, height=550)
@@ -504,7 +510,7 @@ class GUI:
                                                         padx = 5, 
                                                         pady = 5) 
                 
-                self.textCons.place(relheight = 0.745, relwidth = 0.7, rely = 0.08) 
+                self.textCons.place(relheight = 0.745, relwidth = 1, rely = 0.08) 
                 
                 self.Window.bind_all("<MouseWheel>", self.on_mousewheel)
 
@@ -625,9 +631,9 @@ class GUI:
                                     name=message['name']
                                     cor=message['cor']
                                 else:
-                                    self.players = {}
+                                    self.players = []
                                     for dics in message:
-                                        self.players[dics['name']] = dics['cor']
+                                        self.players.append({'name': dics['name'], 'color': dics['cor']})
 
                                     print(self.players)
                                     break
