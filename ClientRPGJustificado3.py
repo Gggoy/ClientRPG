@@ -438,10 +438,9 @@ class GUI:
                                         rely = 0.55) 
                 self.Window.mainloop() 
 
-        def onPlayerClick(self, this):
-            colors = (this.cget('bg'), this.cget('fg'))
-            # print(colors)
-            this.config(bg=colors[1], fg=colors[0])
+        def onPlayerClick(self, c):
+            self.playerBtts[c].config(bg=self.playerBtts[c].cget('fg'), fg=self.playerBtts[c].cget('bg'))
+            self.players[c]['selected'] = not self.players[c]['selected']
 
         def createSidebarButtons(self):
             for playerBtt in self.playerBtts:
@@ -454,7 +453,7 @@ class GUI:
                                     fg = self.players[i]['color'],
                                     bg = 'black', text = self.players[i]['name'],
                                     font = "Courier 14 bold",
-                                    command=lambda c=i: self.playerBtts[c].config(bg=self.playerBtts[c].cget('fg'), fg=self.playerBtts[c].cget('bg')))
+                                    command=lambda c=i: self.onPlayerClick(c))
                 self.playerBtts.append(tempButton)
                 self.playerBtts[-1].place(relwidth=1, relheight=0.1, rely = 0.1*(len(self.playerBtts)-1))
 
@@ -626,7 +625,6 @@ class GUI:
                                     self.textCons.see(END)
                                     self.textCons.config(state = DISABLED)
                                 elif type(message).__name__=='dict':
-                                    print(message)
                                     playerFlag = True
                                     for i in range(len(self.players)):
                                         if self.players[i]['name'] == message['name']:
@@ -636,12 +634,14 @@ class GUI:
                                             print(self.players)
                                             break
                                     if playerFlag:
+                                        message['selected'] = False
                                         self.players.append(message)
                                     
                                     self.createSidebarButtons()
                                 else:
                                     self.players = []
                                     for dics in message:
+                                        dics['selected'] = False
                                         self.players.append(dics)
 
                                     print(self.players)
@@ -653,8 +653,12 @@ class GUI:
         # function to send messages 
         def sendMessage(self):
                 self.textCons.config(state=DISABLED)
+                remetentes = []
+                for player in self.players:
+                    if player['selected']:
+                        remetentes.append(player['name'])
                 while True:
-                        message_sent = pickle.dumps(msg(self.name,self.msg))
+                        message_sent = pickle.dumps(msg(remetentes,self.msg))
                         message_sent_header = f"{len(message_sent):<{HEADER_LENGTH}}".encode(FORMAT)
                         client.send(message_sent_header+message_sent)    
                         break   
