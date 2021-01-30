@@ -54,7 +54,6 @@ print(f'Listening for connections on {IP}:{PORT}...')
 colore='#ffffff'
 
 def send_new_message(notifi,client_socket):
-    notifi=pickle.dumps(msg('Server',notifi,colore))
     notifi_header = f"{len(notifi):<{HEADER_LENGTH}}".encode('utf-8')
     client_socket.send(notifi_header+notifi)
 
