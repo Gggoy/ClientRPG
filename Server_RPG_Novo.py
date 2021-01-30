@@ -337,15 +337,19 @@ while True:
                 if cor is False:
                         sockets_list.remove(notified_socket)
                 else:
-                    newuser=pickle.dumps({'name': espera_de_cor[notified_socket]['data'], 'cor': cor})
+                    cordec=cor['data'].decode('utf-8')
+                    newuser=pickle.dumps({'name': espera_de_cor[notified_socket]['data'], 'cor': cordec})
+                    newuser_header=f"{len(newuser):<{HEADER_LENGTH}}".encode('utf-8')
                     for client_socket in clients:
-                        newuser_header=f"{len(new_user):<{HEADER_LENGTH}}".encode('utf-8')
+                        alreadyuser=pickle.dumps({'name': client_socket['data'], 'cor': client_socket['cor']})
+                        auser_header=f"{len(alreadyuser):<{HEADER_LENGTH}}".encode('utf-8')
                         client_socket.send(newuser_header+newuser)
+                        notified_socket.send(auser_header+alreadyuser)
                     # Save username and username header                        
                     clients[notified_socket] = espera_de_cor[notified_socket]
                     clients[notified_socket]['calling'] = []
                     clients[notified_socket]['rolling'] = 0
-                    clients[notified_socket]['cor']=cor['data'].decode('utf-8')
+                    clients[notified_socket]['cor']=cordec
                     print('Accepted new connection from user: {}.'.format(clients[notified_socket]['data']))
                     send_new_message(instructions,notified_socket)
                 del espera_de_cor[notified_socket]
