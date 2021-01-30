@@ -475,7 +475,7 @@ class GUI:
                 self.Window.deiconify() 
                 self.Window.title("CHATROOM") 
                 self.Window.resizable(width = False, height = False) 
-                self.Window.configure(width = 770, height = 550, bg = COR_1)
+                self.Window.configure(width = 800, height = 550, bg = COR_1)
 
                 self.sidebar = Frame(self.Window, bg = COR_1, width=200, height=550)
                 self.sidebar.pack(expand = False, fill = 'both', side = 'left', anchor = 'nw')
