@@ -607,7 +607,7 @@ class GUI:
                                 message_length = int(message_header.decode(FORMAT).strip())
                                 message = client.recv(message_length)
                                 message=pickle.loads(message)
-                                if type(message)=='dict':
+                                if type(data).__name__=='dict':
                                     name=message['name']
                                     cor=message['cor']
                                 else:
