@@ -100,7 +100,9 @@ def apply_posmod_pre(receiver,fonte,rolagem):
                     rolagem['p']+=Decimal(mod[1].split('d')[0])*(int(mod[1].split('d')[1])+1)*5
                     if random.randint(1,20)<=int(mod[1].split('d')[1]):
                         mod[0]-=1
-                        send_new_message('Usado o recurso '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.',receiver)
+                        notifi='Usado o recurso '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
+                        notifi=pickle.dumps(msg('Server',notifi,colore))
+                        send_new_message(notifi,receiver)
 
 def apply_posmod_pos(receiver,fonte,rolagem,r):
     for mod in fonte['posmod']:
@@ -112,24 +114,32 @@ def apply_posmod_pos(receiver,fonte,rolagem,r):
                         if r<=rolagem['p'] and '-' in alternativa:
                             if r-Decimal(alternativa)*50>rolagem['p']:
                                 mod[0]-=1
-                                send_new_message('Usado o recurso '+alternativa+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.',receiver)
+                                notifi='Usado o recurso '+alternativa+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
+                                notifi=pickle.dumps(msg('Server',notifi,colore))
+                                send_new_message(notifi,receiver)
                                 r-=Decimal(alternativa)*50
                         elif r>rolagem['p'] and '-' not in alternativa:
                             if r-Decimal(alternativa)*50<=rolagem['p']:
                                 mod[0]-=1
-                                send_new_message('Usado o recurso '+alternativa+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.',receiver)
+                                notifi='Usado o recurso '+alternativa+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
+                                notifi=pickle.dumps(msg('Server',notifi,colore))
+                                send_new_message(notifi,receiver)
                                 r-=Decimal(alternativa)*50
             else:
                 if 'd' not in mod[1]:
                     if r<=rolagem['p'] and '-' in mod[1]:
                         if r-Decimal(mod[1])*50>rolagem['p']:
                             mod[0]-=1
-                            send_new_message('Usado o recurso '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.',receiver)
+                            notifi='Usado o recurso '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
+                            notifi=pickle.dumps(msg('Server',notifi,colore))
+                            send_new_message(notifi,receiver)
                             r-=Decimal(mod[1])*50
                     elif r>rolagem['p'] and '-' not in mod[1]:
                         if r-Decimal(mod[1])*50<=rolagem['p']:
                             mod[0]-=1
-                            send_new_message('Usado o recurso '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.',receiver)
+                            notifi='Usado o recurso '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
+                            notifi=pickle.dumps(msg('Server',notifi,colore))
+                            send_new_message(notifi,receiver)
                             r-=Decimal(mod[1])*50
     return(r)
 
@@ -211,15 +221,21 @@ while True:
                 if message is False:
                     print('Closed connection from: {}.'.format(clients[notified_socket]['data']))
                     for client_socket in clients[notified_socket]['calling']:
-                        send_new_message(clients[notified_socket]['data']+" desconectou enquanto chamava você. Você não está mais rolando.",client_socket)
+                        notifi=clients[notified_socket]['data']+" desconectou enquanto chamava você. Você não está mais rolando."
+                        notifi=pickle.dumps(msg('Server',notifi,colore))
+                        send_new_message(notifi,client_socket)
                         clients[client_socket]['rolling']=0
                     try:
                         clients[rolls[notified_socket][0]['caller']]['calling'].remove(notified_socket)
                         if clients[rolls[notified_socket][0]['caller']]['calling']==[]:
-                            send_new_message(clients[notified_socket]['data']+" desconectou e era sua única chamada. Você não está mais rolando.",rolls[notified_socket][0]['caller'])
+                            notifi=clients[notified_socket]['data']+" desconectou e era sua única chamada. Você não está mais rolando."
+                            notifi=pickle.dumps(msg('Server',notifi,colore))
+                            send_new_message(notifi,rolls[notified_socket][0]['caller'])
                             clients[rolls[notified_socket][0]['caller']]['rolling']=0
                         else:
-                            send_new_message(clients[notified_socket]['data']+" desconectou porém você ainda tem chamadas. Você continua rolando.",rolls[notified_socket][0]['caller'])
+                            notifi=clients[notified_socket]['data']+" desconectou porém você ainda tem chamadas. Você continua rolando."
+                            notifi=pickle.dumps(msg('Server',notifi,colore))
+                            send_new_message(notifi,rolls[notified_socket][0]['caller'])
                     except:
                         pass
                     
@@ -254,7 +270,9 @@ while True:
                 elif type(messagepf).__name__=='roll':
                         aceitos=[]                        
                         if messagepf.who=='hidden':
-                            send_new_message("Confira o que você espera enviar ao oponente em caso de sucesso dele (s ou n).",notified_socket)
+                            notifi="Confira o que você espera enviar ao oponente em caso de sucesso dele (s ou n)."
+                            notifi=pickle.dumps(msg('Server',notifi,colore))
+                            send_new_message(notifi,notified_socket)
                         for client_socket in clients:
                             check=clients[client_socket]['data']
                             roladas=messagepf.receiver.count(check)
@@ -263,19 +281,29 @@ while True:
                                     user['rolling']=1
                                     clients[client_socket]['rolling']+=roladas
                                     aceitos.append(client_socket)
-                                    send_new_message(check+" encontra-se disponível.",notified_socket)
-                                    send_new_message(user['data']+" iniciou "+str(roladas)+" rolagem(ns) com você com as tags: "+messagepf.who+messagepf.hidden*'e hidden'+(roladas>1)*"\nRecomenda-se ler o resultado anterior para inserir o próximo bloco para evitar repetição de recursos."+"\nBloco da primeira rolagem:",client_socket)
+                                    notifi=check+" encontra-se disponível."
+                                    notifi=pickle.dumps(msg('Server',notifi,colore))
+                                    send_new_message(notifi,notified_socket)
+                                    notifi=user['data']+" iniciou "+str(roladas)+" rolagem(ns) com você com as tags: "+messagepf.who+messagepf.hidden*'e hidden'+(roladas>1)*"\nRecomenda-se ler o resultado anterior para inserir o próximo bloco para evitar repetição de recursos."+"\nBloco da primeira rolagem:"
+                                    notifi=pickle.dumps(msg('Server',notifi,colore))
+                                    send_new_message(notifi,client_socket)
                                     rolls[client_socket]=[{'advan': 0,'receiver': client_socket,'caller': notified_socket,'ready':0,'p':1000,'q':2000,'send_type': messagepf.who}]
                                     for i in range(roladas-1):
                                         rolls[client_socket].append({'advan': 0,'receiver': client_socket,'caller': notified_socket,'ready':0,'p':1000,'q':2000,'send_type': messagepf.who})
                                 else:
-                                    send_new_message(check+" encontra-se indisponível.",notified_socket)    
+                                    notifi=check+" encontra-se indisponível."
+                                    notifi=pickle.dumps(msg('Server',notifi,colore))
+                                    send_new_message(notifi,notified_socket)    
                         user['calling']=aceitos
                         if user['rolling']:
-                            send_new_message("Bloco comunitário:",notified_socket)
+                            notifi="Bloco comunitário:"
+                            notifi=pickle.dumps(msg('Server',notifi,colore))
+                            send_new_message(notifi,notified_socket)
                             rolls[notified_socket]={'send_type':messagepf.who}
                         else:
-                            send_new_message("Ninguém aceitou.",notified_socket)
+                            notifi="Ninguém aceitou."
+                            notifi=pickle.dumps(msg('Server',notifi,colore))
+                            send_new_message(notifi,notified_socket)
 
                 elif type(messagepf).__name__=='bloco':
                     if user['rolling']:
@@ -296,9 +324,13 @@ while True:
                                     rola(rolls[called_socket][i]) 
                         user['rolling']-=1
                         user['calling']=[]
-                        send_new_message('Premod: '+str(messagepf.premod)+'\nPosmod: '+messagepf.posmod+"\gFinalizado! Mais "+str(user['rolling'])+' rolagens.',notified_socket)
+                        notifi='Premod: '+str(messagepf.premod)+'\nPosmod: '+messagepf.posmod+"\gFinalizado! Mais "+str(user['rolling'])+' rolagens.'
+                        notifi=pickle.dumps(msg('Server',notifi,colore))
+                        send_new_message(notifi,notified_socket)
                     else:
-                        send_new_message("Você não se encontra rolando no momento.",notified_socket)
+                        notifi="Você não se encontra rolando no momento."
+                        notifi=pickle.dumps(msg('Server',notifi,colore))
+                        send_new_message(notifi,notified_socket)
                             
             elif notified_socket in espera_de_cor:
                 cor=receive_message(notified_socket)
@@ -306,7 +338,9 @@ while True:
                         sockets_list.remove(notified_socket)
                 else:
                     for client_socket in clients:
-                        send_new_message('O usuário '+espera_de_cor[notified_socket]['data']+' se juntou ao chat!',client_socket)
+                        notifi='O usuário '+espera_de_cor[notified_socket]['data']+' se juntou ao chat!'
+                        notifi=pickle.dumps(msg('Server',notifi,colore))
+                        send_new_message(notifi,client_socket)
                     # Save username and username header
                     clients[notified_socket] = espera_de_cor[notified_socket]
                     clients[notified_socket]['calling'] = []
