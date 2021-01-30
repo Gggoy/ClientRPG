@@ -475,7 +475,7 @@ class GUI:
                 self.Window.deiconify() 
                 self.Window.title("CHATROOM") 
                 self.Window.resizable(width = False, height = False) 
-                self.Window.configure(width = 770, height = 550, bg = COR_1)
+                self.Window.configure(width = 800, height = 550, bg = COR_1)
 
                 self.sidebar = Frame(self.Window, bg = COR_1, width=200, height=550)
                 self.sidebar.pack(expand = False, fill = 'both', side = 'left', anchor = 'nw')
@@ -484,7 +484,7 @@ class GUI:
                 self.labelTest.place(relwidth=1)
 
 
-                self.mainFrame = Frame(self.Window, bg = COR_1, width = 570, height=550)
+                self.mainFrame = Frame(self.Window, bg = COR_1, width = 600, height=550)
                 self.mainFrame.pack(expand=True, fill='both', side='right')
 
                 self.labelHead = Label(self.mainFrame, bg = COR_1, text = self.name, font = "Courier 14 bold", pady = 5) 
@@ -504,17 +504,13 @@ class GUI:
                                                         padx = 5, 
                                                         pady = 5) 
                 
-                self.textCons.place(relheight = 0.745, relwidth = 1, rely = 0.08) 
+                self.textCons.place(relheight = 0.745, relwidth = 0.7, rely = 0.08) 
                 
                 self.Window.bind_all("<MouseWheel>", self.on_mousewheel)
 
                 self.labelBottom = Label(self.mainFrame, bg = COR_1, height = 80) 
                 
                 self.labelBottom.place(relwidth = 1, rely = 0.825) 
-
-                self.line2 = Label(self.labelBottom, width = 450) 
-
-                self.line2.place(relwidth = 1, rely = 0.07, relheight = 0.012) 
                 
                 self.entryMsg = Entry(self.labelBottom, bg = COR_1, font = "Courier 12") 
                 
@@ -550,7 +546,9 @@ class GUI:
                 
                 self.textCons.config(state = DISABLED) 
 
-                
+                self.line2 = Label(self.mainFrame, width = 450) 
+
+                self.line2.place(relwidth = 1, rely = 0.07, relheight = 0.012) 
 
 
 
