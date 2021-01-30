@@ -104,34 +104,18 @@ def apply_posmod_pos(receiver,fonte,rolagem,r):
                 if type(i)==int:
                     if r<=rolagem['p'] and i<0:
                         if r-i*50>rolagem['p']:
-                                mod[0]-=1
-                                notifi='Usado o recurso '+i+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
-                                notifi=pickle.dumps(msg('Server',notifi,colore))
-                                send_new_message(notifi,receiver)
-                                r-=i*50
+                            mod[0]-=1
+                            notifi='Usado o recurso '+i+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
+                            notifi=pickle.dumps(msg('Server',notifi,colore))
+                            send_new_message(notifi,receiver)
+                            r-=i*50
                     elif r>rolagem['p'] and i>0:
                         if r-i*50<=rolagem['p']:
                             mod[0]-=1
-                            notifi='Usado o recurso '+alternativa+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
+                            notifi='Usado o recurso '+i+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
                             notifi=pickle.dumps(msg('Server',notifi,colore))
                             send_new_message(notifi,receiver)
-                            r-=Decimal(alternativa)*50
-            else:
-                if 'd' not in mod[1]:
-                    if r<=rolagem['p'] and '-' in mod[1]:
-                        if r-Decimal(mod[1])*50>rolagem['p']:
-                            mod[0]-=1
-                            notifi='Usado o recurso '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
-                            notifi=pickle.dumps(msg('Server',notifi,colore))
-                            send_new_message(notifi,receiver)
-                            r-=Decimal(mod[1])*50
-                    elif r>rolagem['p'] and '-' not in mod[1]:
-                        if r-Decimal(mod[1])*50<=rolagem['p']:
-                            mod[0]-=1
-                            notifi='Usado o recurso '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'.'
-                            notifi=pickle.dumps(msg('Server',notifi,colore))
-                            send_new_message(notifi,receiver)
-                            r-=Decimal(mod[1])*50
+                            r-=i*50
     return(r)
 
 def rola(rolagem):
@@ -212,10 +196,6 @@ while True:
 
                 # If False, client disconnected, cleanup
                 if message is False:
-                    newuser=pickle.dumps({'name': clients[notified_socket]['data']})
-                    newuser_header=f"{len(newuser):<{HEADER_LENGTH}}".encode('utf-8')
-                    for client_socket in clients:
-                        client_socket.send(newuser_header+newuser)
                         
                     print('Closed connection from: {}.'.format(clients[notified_socket]['data']))
                     for client_socket in clients[notified_socket]['calling']:
@@ -240,8 +220,14 @@ while True:
                     # Remove from list for socket.socket()
                     sockets_list.remove(notified_socket)
 
+                    newuser=pickle.dumps({'name': clients[notified_socket]['data']})
+                    newuser_header=f"{len(newuser):<{HEADER_LENGTH}}".encode('utf-8')
+                    
                     # Remove from our list of users
                     del clients[notified_socket]
+
+                    for client_socket in clients:
+                        client_socket.send(newuser_header+newuser)
 
                     continue
 
