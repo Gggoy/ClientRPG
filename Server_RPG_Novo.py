@@ -342,7 +342,7 @@ while True:
                     newuser_header=f"{len(newuser):<{HEADER_LENGTH}}".encode('utf-8')
                     alreadyuser=[]
                     for client_socket in clients:
-                        alreadyuser.append({'name': client_socket['data'], 'cor': client_socket['cor']})
+                        alreadyuser.append({'name': clients[client_socket]['data'], 'cor': clients[client_socket]['cor']})
                         client_socket.send(newuser_header+newuser)
                     # print(alreadyuser)
                     alreadyuser=pickle.dumps(alreadyuser)
