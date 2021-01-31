@@ -89,7 +89,7 @@ def apply_posmod_pre(receiver,fonte,rolagem):
                 if type(i)==tuple:
                     if i[1]!='*':
                         if i[0]!=0:
-                            rolagem['p']+=i[0]*(i[1]+1)*50
+                            rolagem['p']+=i[0]*(i[1]+1)*25
                             if random.randint(1,20)<=i[0]*i[1]/2:
                                 mod[0]-=1
                                 notifi='Usado o recurso '+str(i[0])+'d'+str(i[1])+' em '+str(mod[1])+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'. Restam '+str(mod[0])+' desse recurso.'
