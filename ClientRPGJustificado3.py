@@ -494,7 +494,7 @@ class GUI:
                 self.Window.deiconify() 
                 self.Window.title("CHATROOM") 
                 self.Window.resizable(width = False, height = False) 
-                self.Window.configure(width = 800, height = 550, bg = COR_1)
+                self.Window.configure(width = 802, height = 550, bg = COR_1)
 
                 self.sidebar = Frame(self.Window, bg = COR_1, width=200, height=550)
                 self.sidebar.pack(expand = False, fill = 'both', side = 'left', anchor = 'nw')
@@ -504,6 +504,9 @@ class GUI:
 
                 self.mainFrame = Frame(self.Window, bg = COR_1, width = 600, height=550)
                 self.mainFrame.pack(expand=True, fill='both', side='right')
+
+                self.sep = Canvas(self.Window, bg = 'white', width=0, height=550)
+                self.sep.pack(expand = False, fill = 'both', side = 'left', anchor = 'nw')
 
                 self.labelHead = Label(self.mainFrame, bg = COR_1, text = self.name, font = "Courier 14 bold", pady = 5) 
                 self.labelHead.place(relwidth = 1) 
@@ -557,7 +560,7 @@ class GUI:
                 self.textCons.config(state = DISABLED) 
 
                 self.line2 = Label(self.mainFrame)                 
-                self.line2.place(relwidth = 1, rely = 0.825, relheight = 0.012) 
+                self.line2.place(relwidth = 1, rely = 0.815, relheight = 0.012) 
 
 
                 self.Window.bind_all("<MouseWheel>", self.on_mousewheel)
@@ -565,7 +568,6 @@ class GUI:
                 self.Window.bind("<Up>",self.up_down)
                 self.Window.bind("<Down>",self.up_down)
                 self.Window.protocol("WM_DELETE_WINDOW", self.on_closing)
-
 
         def on_mousewheel(self, event):
             self.textCons.yview_scroll(-1*int(event.delta/120), "units")
@@ -589,7 +591,7 @@ class GUI:
         def changecolor(self,i):
             global colors
             self.buttonMsg.config(fg=colors[(i-8)%100])
-            self.rollBtt.config(bg=colors[(i-10)%100])
+            self.rollBtt.config(fg=colors[(i-10)%100])
             self.entryMsg.config(fg=colors[(i-9)%100])
             self.labelHead.config(fg=colors[i])
             self.line.config(bg=colors[(i-2)%100])
