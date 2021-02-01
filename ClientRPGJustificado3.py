@@ -442,6 +442,17 @@ class GUI:
             self.playerBtts[c].config(bg=self.playerBtts[c].cget('fg'), fg=self.playerBtts[c].cget('bg'))
             self.players[c]['selected'] = not self.players[c]['selected']
 
+        def AllClick(self):
+            if self.switch:
+                for c in range(len(self.playerBtts)):
+                    self.playerBtts[c].config(bg=self.players[c]['color'], fg='black')
+                    self.players[c]['selected'] = True
+            else:
+                for c in range(len(self.playerBtts)):
+                    self.playerBtts[c].config(bg='black', fg=self.players[c]['color'])
+                    self.players[c]['selected'] = False
+            self.switch=not self.switch
+
         def createSidebarButtons(self):
             for playerBtt in self.playerBtts:
                 playerBtt.destroy()
@@ -456,7 +467,14 @@ class GUI:
                                     command=lambda c=i: self.onPlayerClick(c))
                 self.playerBtts.append(tempButton)
                 self.playerBtts[-1].place(relwidth=1, relheight=0.1, rely = 0.1*(len(self.playerBtts)-1))
-
+            self.switch=True
+            tempButton = Button(self.sidebar,
+                                    fg = 'white',
+                                    bg = 'black', text = 'All',
+                                    font = "Courier 14 bold",
+                                    command=lambda: self.AllClick())
+            tempButton.place(relwidth=1, relheight=0.1, rely = 0.1*len(self.playerBtts))
+                
         def on_closing(self):
                 client.close()
                 sys.exit()
