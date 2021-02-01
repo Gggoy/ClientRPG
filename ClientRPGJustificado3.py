@@ -444,10 +444,12 @@ class GUI:
 
         def AllClick(self):
             if self.switch:
+                self.tempButton.config(text='Exclude All')
                 for c in range(len(self.playerBtts)):
                     self.playerBtts[c].config(bg=self.players[c]['color'], fg='black')
                     self.players[c]['selected'] = True
             else:
+                self.tempButton.config(text='Select All')
                 for c in range(len(self.playerBtts)):
                     self.playerBtts[c].config(bg='black', fg=self.players[c]['color'])
                     self.players[c]['selected'] = False
@@ -468,12 +470,12 @@ class GUI:
                 self.playerBtts.append(tempButton)
                 self.playerBtts[-1].place(relwidth=1, relheight=0.1, rely = 0.1*(len(self.playerBtts)-1))
             self.switch=True
-            tempButton = Button(self.sidebar,
+            self.tempButton = Button(self.sidebar,
                                     fg = 'white',
-                                    bg = 'black', text = 'All',
+                                    bg = 'black', text = 'Select All',
                                     font = "Courier 14 bold",
                                     command=lambda: self.AllClick())
-            tempButton.place(relwidth=1, relheight=0.1, rely = 0.1*len(self.playerBtts))
+            self.tempButton.place(relwidth=1, relheight=0.1, rely = 0.1*len(self.playerBtts))
                 
         def on_closing(self):
                 client.close()
@@ -626,12 +628,11 @@ class GUI:
         # function to receive messages 
         def receive(self): 
                 while True: 
-                        # try:
+                        try:
                                 message_header = client.recv(HEADER_LENGTH)
                                 message_length = int(message_header.decode(FORMAT).strip())
                                 message = client.recv(message_length)
                                 message=pickle.loads(message)
-                                # print(message)
                                 if type(message).__name__=='msg':
                                     message_final = message.sender+' > '+message.content
                                     # insert messages to text box 
@@ -660,10 +661,8 @@ class GUI:
                                     playerFlag = True
                                     for i in range(len(self.players)):
                                         if self.players[i]['name'] == message['name']:
-                                            print("if")
                                             self.players.pop(i)
                                             playerFlag = False
-                                            print(self.players)
                                             break
                                     if playerFlag:
                                         message['selected'] = False
@@ -675,12 +674,9 @@ class GUI:
                                     for dics in message:
                                         dics['selected'] = False
                                         self.players.append(dics)
-
-                                    print(self.players)
                                     break
-                        # except:   
-                        #             # an error will be printed on the command line or console if there's an error 
-                        #             self.on_closing()
+                        except:   
+                            self.on_closing()
                 
         # function to send messages 
         def sendMessage(self):

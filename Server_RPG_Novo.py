@@ -158,9 +158,12 @@ def rola(rolagem):
     rolagem['p']+=-(rolagem['advan']==-1)*300-(rolagem['advan']==-2)*500-(rolagem['advan']<-2)*600
     crit=rolagem['p']/10+(rolagem['p']>rolagem['q'])*(rolagem['p']-rolagem['q'])
     r=random.randint(1,rolagem['q'])
-    apply_posmod_pos(recibru,rolagem,rolagem,r)
-    apply_posmod_pos(caller,rolls[caller],rolagem,r)
-    apply_posmod_pos(recibru,rolagem,rolagem,r)
+    while True:
+        confere=rolagem['p']
+        apply_posmod_pos(recibru,rolagem,rolagem,r)
+        apply_posmod_pos(caller,rolls[caller],rolagem,r)
+        if confere==rolagem['p']:
+            break
     send_rolagem(rolagem,r,crit)
             
 # Handles message receiving
@@ -279,8 +282,7 @@ while True:
                                 client_socket.send(message["header"] + message['data'])
                         notified_socket.send(message["header"] + message['data'])
 
-                elif type(messagepf).__name__=='roll':
-                        aceitos=[]                        
+                elif type(messagepf).__name__=='roll':                       
                         if messagepf.who=='hidden':
                             notifi="Confira o que você espera enviar ao oponente em caso de sucesso dele (s ou n)."
                             notifi=pickle.dumps(msg('Server',notifi,colore))
@@ -290,9 +292,8 @@ while True:
                             roladas=messagepf.receiver.count(check)
                             if roladas:
                                 if not clients[client_socket]['rolling']:
-                                    user['rolling']=1
                                     clients[client_socket]['rolling']+=roladas
-                                    aceitos.append(client_socket)
+                                    user['calling'].append(client_socket)
                                     notifi=check+" encontra-se disponível."
                                     notifi=pickle.dumps(msg('Server',notifi,colore))
                                     send_new_message(notifi,notified_socket)
@@ -305,9 +306,9 @@ while True:
                                 else:
                                     notifi=check+" encontra-se indisponível."
                                     notifi=pickle.dumps(msg('Server',notifi,colore))
-                                    send_new_message(notifi,notified_socket)    
-                        user['calling']=aceitos
-                        if user['rolling']:
+                                    send_new_message(notifi,notified_socket)
+                        if user['calling']:
+                            user['rolling']=1
                             notifi="Bloco comunitário:"
                             notifi=pickle.dumps(msg('Server',notifi,colore))
                             send_new_message(notifi,notified_socket)
