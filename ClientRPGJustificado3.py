@@ -351,7 +351,6 @@ hostname = socket.gethostname()
 SERVER = socket.gethostbyname(hostname)
 ADDRESS = (SERVER, PORT) 
 FORMAT = "utf-8"
-COR_1='#000000'
 
 # Create a new client socket 
 # and connect to the server 
@@ -514,74 +513,82 @@ class GUI:
                 self.Window.deiconify() 
                 self.Window.title("CHATROOM") 
                 self.Window.resizable(width = False, height = False) 
-                self.Window.configure(width = 802, height = 550, bg = COR_1)
+                self.Window.configure(width = 800, height = 500, bg = 'black')
 
-                self.sidebar = Frame(self.Window, bg = COR_1, width=200, height=550)
-                self.sidebar.pack(expand = False, fill = 'both', side = 'left', anchor = 'nw')
+                self.Window2=Tk()
+                self.Window2.title("ROLL") 
+                self.Window2.resizable(width = False, height = False) 
+                self.Window2.configure(width = 1000, height = 500, bg = 'black')
+                self.progress = ttk.Progressbar(self.Window2, orient=HORIZONTAL, length = 1000)
+                self.progress.pack(expand=False, padx=10, pady=10, side='bottom')
+
+                self.sidebar = Frame(self.Window, bg = 'black', width=200, height=500)
+                self.sidebar.pack(expand = False, fill = 'both', side = 'left')
 
                 self.playerBtts = []
                 self.createSidebarButtons()
+                
+                self.sep = Label(self.Window, bg = 'white')
+                self.sep.pack(expand = False, fill = 'both', side = 'left')
 
-                self.mainFrame = Frame(self.Window, bg = COR_1, width = 600, height=550)
-                self.mainFrame.pack(expand=True, fill='both', side='right')
+                self.mainFrame = Frame(self.Window, bg = 'blue', width=562, height=500)
+                self.mainFrame.pack(expand=False, side='left')
 
-                self.sep = Canvas(self.Window, bg = 'white', width=0, height=550)
-                self.sep.pack(expand = False, fill = 'both', side = 'left', anchor = 'nw')
+                #self.sep2 = Label(self.Window, bg = 'white')
+                #self.sep2.pack(expand = False, fill = 'both', side = 'left')
 
-                self.labelHead = Label(self.mainFrame, bg = COR_1, text = self.name, font = "Courier 14 bold", pady = 5) 
-                self.labelHead.place(relwidth = 1) 
+                self.labelHead = Label(self.mainFrame, bg = 'black', text = self.name, font = "Courier 14 bold", pady=5) 
+                self.labelHead.place(relwidth=1)
 
-                self.line = Label(self.mainFrame, width = 450)                 
-                self.line.place(relwidth = 1, rely = 0.07, relheight = 0.012) 
+                self.line = Label(self.mainFrame)                 
+                self.line.place(relwidth=1,relheight=0.012,y=36)
                 
                 self.textCons = Text(self.mainFrame, 
                                                         width = 20, 
                                                         height = 2, 
-                                                        bg = COR_1,  
+                                                        bg = 'black',  
                                                         font = "Courier 14", 
                                                         padx = 5, 
                                                         pady = 5) 
-                self.textCons.place(relheight = 0.745, relwidth = 1, rely = 0.08) 
+                self.textCons.place(y=42, relheight = 0.745, relwidth = 1)
+
+                self.line2 = Label(self.mainFrame)                 
+                self.line2.place(relwidth=1,relheight=0.012,y=415)
                 
-                self.labelBottom = Label(self.mainFrame, bg = COR_1, height = 80)     
-                self.labelBottom.place(relwidth = 1, rely = 0.825) 
+                self.labelBottom = Label(self.mainFrame, bg = 'black', height = 79)     
+                self.labelBottom.place(relwidth=1,y=421) 
                 
-                self.entryMsg = Entry(self.labelBottom, bg = COR_1, font = "Courier 12") 
-                self.entryMsg.place(relwidth = 0.74, 
-                                                        relheight = 0.06, 
-                                                        rely = 0.008, 
-                                                        relx = 0.011) 
+                self.entryMsg = Entry(self.labelBottom, bg = 'black', font = "Courier 12") 
+                self.entryMsg.place(width = 417, 
+                                                        height = 65, 
+                                                        y = 5, 
+                                                        x = 5) 
                 self.entryMsg.focus() 
                 
-                # create a Send Button 
                 self.buttonMsg = Button(self.labelBottom, 
                                                             text = "Send", 
                                                             font = "Courier 12 bold", 
                                                             width = 10, 
-                                                            bg = COR_1,
+                                                            bg = 'black',
                                                             command = lambda : self.sendButton(self.entryMsg.get())) 
-                self.buttonMsg.place(relx = 0.77, 
-                                                    rely = 0.008, 
-                                                    relheight = 0.03, 
-                                                    relwidth = 0.11) 
+                self.buttonMsg.place(x = 428, 
+                                                    y = 5, 
+                                                    height = 33, 
+                                                    width = 63) 
                 
                 self.rollBtt = Button(self.labelBottom, 
                                                         text = "Roll", 
                                                         font = "Courier 12 bold", 
                                                         width = 10, 
-                                                        bg = COR_1)
+                                                        bg = 'black')
                                                         #command = lambda : self.sendButton(self.entryMsg.get())) 
-                self.rollBtt.place(relx = 0.88, 
-                                                rely = 0.042, 
-                                                relheight = 0.03, 
-                                                relwidth = 0.11) 
+                self.rollBtt.place(x = 491, 
+                                                y = 38, 
+                                                height = 33, 
+                                                width = 63) 
 
                 self.textCons.config(cursor = "arrow") 
                 self.textCons.config(state = DISABLED) 
-
-                self.line2 = Label(self.mainFrame)                 
-                self.line2.place(relwidth = 1, rely = 0.815, relheight = 0.012) 
-
 
                 self.Window.bind_all("<MouseWheel>", self.on_mousewheel)
                 self.Window.bind('<Return>',(lambda event: self.sendButton(self.entryMsg.get())))
