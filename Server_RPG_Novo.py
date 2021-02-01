@@ -129,7 +129,21 @@ def apply_posmod_pos(receiver,fonte,rolagem,r):
                             notifi=pickle.dumps(msg('Server',notifi,colore))
                             send_new_message(notifi,receiver)
                             rolagem['p']+=i*50
-    return(r)
+                elif type(i)==list:
+                    if r<=rolagem['p'] and i[0]<0:
+                        if r-i[0]*(i[1]+1)*25>rolagem['p']:
+                            mod[0]-=1
+                            notifi='Usado o recurso '+i+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'. Restam '+str(mod[0])+' desse recurso.'
+                            notifi=pickle.dumps(msg('Server',notifi,colore))
+                            send_new_message(notifi,receiver)
+                            rolagem['p']+=i[0]*random.randint(1,i[1])*50
+                    elif r>rolagem['p'] and i[0]>0:
+                        if r-i[0]*(i[1]+1)*25<=rolagem['p']:
+                            mod[0]-=1
+                            notifi='Usado o recurso '+i+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'. Restam '+str(mod[0])+' desse recurso.'
+                            notifi=pickle.dumps(msg('Server',notifi,colore))
+                            send_new_message(notifi,receiver)
+                            rolagem['p']+=i[0]*random.randint(1,i[1])*50
 
 def rola(rolagem):
     global rolls
@@ -144,9 +158,9 @@ def rola(rolagem):
     rolagem['p']+=-(rolagem['advan']==-1)*300-(rolagem['advan']==-2)*500-(rolagem['advan']<-2)*600
     crit=rolagem['p']/10+(rolagem['p']>rolagem['q'])*(rolagem['p']-rolagem['q'])
     r=random.randint(1,rolagem['q'])
-    r=apply_posmod_pos(recibru,rolagem,rolagem,r)
-    r=apply_posmod_pos(caller,rolls[caller],rolagem,r)
-    r=apply_posmod_pos(recibru,rolagem,rolagem,r)
+    apply_posmod_pos(recibru,rolagem,rolagem,r)
+    apply_posmod_pos(caller,rolls[caller],rolagem,r)
+    apply_posmod_pos(recibru,rolagem,rolagem,r)
     send_rolagem(rolagem,r,crit)
             
 # Handles message receiving
