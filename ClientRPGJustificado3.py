@@ -483,6 +483,7 @@ class GUI:
             self.tempButton.place(relwidth=1, relheight=0.1, rely = 0.1*len(self.playerBtts))
                 
         def displayres(self,res):
+            self.label.config(text='Crítico: '+str(res['crit'])+'; Sucesso: '+str(res['p'])+'; Rolado: '+str(res['r']))
             self.progress['value']=0
             p=res['p']//5
             r=res['r']//5
@@ -549,6 +550,8 @@ class GUI:
                 self.Window2.title("ROLL") 
                 self.Window2.resizable(width = False, height = False) 
                 self.Window2.configure(width = 500, height = 500, bg = 'black')
+                self.label = Label(self.Window2, bg = 'black', width=50, text = '', font = "Courier 14 bold", pady=5) 
+                self.label.pack(expand=False, side='top')
                 self.progress = ttk.Progressbar(self.Window2, orient=HORIZONTAL, length = 406, mode='determinate')
                 self.progress.pack(expand=False, padx=10, pady=10, side='bottom')
                 self.progress['value']=1/4
