@@ -487,8 +487,10 @@ class GUI:
             p=res['p']//5
             r=res['r']//5
             crit=res['crit']//5
-            self.barracrit.config(x=crit+2)
-            self.barrap.config(x=p+2)
+            self.barracrit1.config(x=crit+1)
+            self.barrap1.config(x=p+1)
+            self.barracrit2.config(x=crit+3)
+            self.barrap2.config(x=p+3)
             for i in range(9):
                 if 4*self.progress['value']+2**(8-i)<=r:
                     self.progress['value']+=2**(6-i)
@@ -499,6 +501,14 @@ class GUI:
         def on_closing(self):
                 client.close()
                 sys.exit()
+        
+        def blocswitch(self):
+            if not self.Window2.winfo_viewable():
+                self.Window2.deiconify()
+                self.blocbtt.config(text='<')
+            else:
+                self.Window2.withdraw()
+                self.blocbtt.config(text='>')
                 
         def goAhead(self, name):
                 my_username = name.encode(FORMAT)
@@ -541,10 +551,15 @@ class GUI:
                 self.Window2.configure(width = 500, height = 500, bg = 'black')
                 self.progress = ttk.Progressbar(self.Window2, orient=HORIZONTAL, length = 406, mode='determinate')
                 self.progress.pack(expand=False, padx=10, pady=10, side='bottom')
-                self.barracrit=Label(self.progress, bg = 'red')                 
-                self.barracrit.place(relwidth=0.0025,relheight=1,x=2)
-                self.barrap=Label(self.progress, bg = 'orange')                 
-                self.barrap.place(relwidth=0.0025,relheight=1,x=2)
+                self.progress['value']=1/4
+                self.barracrit1=Label(self.progress, bg = 'red')                 
+                self.barracrit1.place(relwidth=0.0025,relheight=1,x=1)
+                self.barracrit2=Label(self.progress, bg = 'red')                 
+                self.barracrit2.place(relwidth=0.0025,relheight=1,x=3)
+                self.barrap1=Label(self.progress, bg = 'orange')                 
+                self.barrap1.place(relwidth=0.0025,relheight=1,x=1)
+                self.barrap2=Label(self.progress, bg = 'orange')                 
+                self.barrap2.place(relwidth=0.0025,relheight=1,x=3)
                 self.Window2.withdraw()
 
                 self.sidebar = Frame(self.Window, bg = 'black', width=200, height=500)
@@ -556,11 +571,22 @@ class GUI:
                 self.sep = Label(self.Window, bg = 'white')
                 self.sep.pack(expand = False, fill = 'both', side = 'left')
 
-                self.mainFrame = Frame(self.Window, bg = 'blue', width=562, height=500)
+                self.mainFrame = Frame(self.Window, width=562, height=500)
                 self.mainFrame.pack(expand=False, side='left')
 
-                #self.sep2 = Label(self.Window, bg = 'white')
-                #self.sep2.pack(expand = False, fill = 'both', side = 'left')
+                self.sep2 = Label(self.Window, bg = 'white')
+                self.sep2.pack(expand = False, fill = 'both', side = 'left')
+
+                self.bttframe = Frame(self.Window, width=30, height=500)
+                self.bttframe.pack(expand=False, side='left')
+
+                self.blocbtt= Button(self.bttframe, 
+                                                        text = ">", 
+                                                        font = "Courier 12 bold", 
+                                                        fg = 'white',
+                                                        bg='black',
+                                                        command = lambda : self.blocswitch())
+                self.blocbtt.place(relheight=1,relwidth=1)
 
                 self.labelHead = Label(self.mainFrame, bg = 'black', text = self.name, font = "Courier 14 bold", pady=5) 
                 self.labelHead.place(relwidth=1)
@@ -665,8 +691,8 @@ class GUI:
                                 message_length = int(message_header.decode(FORMAT).strip())
                                 message = client.recv(message_length)
                                 message=pickle.loads(message)
-                                if type(message).__name__!='list':
-                                    message=res(1000,100,7)
+                                #if type(message).__name__!='list':
+                                    #message=res(1000,100,7)
                                 if type(message).__name__=='msg':
                                     message_final = message.sender+' > '+message.content
                                     # insert messages to text box 
@@ -718,12 +744,12 @@ class GUI:
         # function to send messages 
         def sendMessage(self):
                 self.textCons.config(state=DISABLED)
-                remetentes = []
+                destinatários = []
                 for player in self.players:
                     if player['selected']:
-                        remetentes.append(player['name'])
+                        destinatários.append(player['name'])
                 while True:
-                        message_sent = pickle.dumps(msg(remetentes,self.msg))
+                        message_sent = pickle.dumps(msg(destinatários,self.msg))
                         message_sent_header = f"{len(message_sent):<{HEADER_LENGTH}}".encode(FORMAT)
                         client.send(message_sent_header+message_sent)    
                         break   
