@@ -394,8 +394,12 @@ while True:
                                 login_message='Username não pode ser Server ou ser branco, tente outro'
 
                         if login_message=='Ok':
-                            if '-' in user['data'] or '/' in user['data'] or '\\' in user['data']:
-                                login_message='Retire caracteres - e / e \ do username'
+                            if len(user['data'])>6:
+                                login_message='Username pode conter até 6 caracteres, tente outro'
+
+                        if login_message=='Ok':
+                            if '/' in user['data'] or '\\' in user['data']:
+                                login_message='Retire caracteres / e \ do username'
                             else:
                                 espera_de_cor[notified_socket]=user
 

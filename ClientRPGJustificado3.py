@@ -368,6 +368,12 @@ class msg:
         self.destiny=destiny
         self.content=content
 
+class res:
+    def __init__(self,p,crit,r):
+        self.p=p
+        self.r=r
+        self.crit=crit
+
 class roll:
     def __init__(self,caller,receiver,who):
         self.caller=caller
@@ -476,6 +482,20 @@ class GUI:
                                     command=lambda: self.AllClick())
             self.tempButton.place(relwidth=1, relheight=0.1, rely = 0.1*len(self.playerBtts))
                 
+        def displayres(self,res):
+            self.progress['value']=0
+            p=res['p']//5
+            r=res['r']//5
+            crit=res['crit']//5
+            self.barracrit.config(x=crit+2)
+            self.barrap.config(x=p+2)
+            for i in range(9):
+                if 4*self.progress['value']+2**(8-i)<=r:
+                    self.progress['value']+=2**(6-i)
+                    if self.progress['value']==r:
+                        break
+                time.sleep(0.5)
+
         def on_closing(self):
                 client.close()
                 sys.exit()
@@ -518,9 +538,14 @@ class GUI:
                 self.Window2=Tk()
                 self.Window2.title("ROLL") 
                 self.Window2.resizable(width = False, height = False) 
-                self.Window2.configure(width = 1000, height = 500, bg = 'black')
-                self.progress = ttk.Progressbar(self.Window2, orient=HORIZONTAL, length = 1000)
+                self.Window2.configure(width = 500, height = 500, bg = 'black')
+                self.progress = ttk.Progressbar(self.Window2, orient=HORIZONTAL, length = 406, mode='determinate')
                 self.progress.pack(expand=False, padx=10, pady=10, side='bottom')
+                self.barracrit=Label(self.progress, bg = 'red')                 
+                self.barracrit.place(relwidth=0.0025,relheight=1,x=2)
+                self.barrap=Label(self.progress, bg = 'orange')                 
+                self.barrap.place(relwidth=0.0025,relheight=1,x=2)
+                self.Window2.withdraw()
 
                 self.sidebar = Frame(self.Window, bg = 'black', width=200, height=500)
                 self.sidebar.pack(expand = False, fill = 'both', side = 'left')
@@ -635,11 +660,13 @@ class GUI:
         # function to receive messages 
         def receive(self): 
                 while True: 
-                        try:
+                        #try:
                                 message_header = client.recv(HEADER_LENGTH)
                                 message_length = int(message_header.decode(FORMAT).strip())
                                 message = client.recv(message_length)
                                 message=pickle.loads(message)
+                                if type(message).__name__!='list':
+                                    message=res(1000,100,7)
                                 if type(message).__name__=='msg':
                                     message_final = message.sender+' > '+message.content
                                     # insert messages to text box 
@@ -674,16 +701,19 @@ class GUI:
                                     if playerFlag:
                                         message['selected'] = False
                                         self.players.append(message)
-                                    
                                     self.createSidebarButtons()
+                                elif type(message).__name__=='res':
+                                    if not self.Window2.winfo_viewable():
+                                        self.Window2.deiconify()
+                                    self.displayres(message)
                                 else:
                                     self.players = []
                                     for dics in message:
                                         dics['selected'] = False
                                         self.players.append(dics)
                                     break
-                        except:   
-                            self.on_closing()
+                        #except:   
+                            #self.on_closing()
                 
         # function to send messages 
         def sendMessage(self):
