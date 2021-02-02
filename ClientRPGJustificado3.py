@@ -448,7 +448,7 @@ class GUI:
             self.players[c]['selected'] = not self.players[c]['selected']
 
         def AllClick(self):
-            if self.switch:
+            if self.tempButton.cget('text')=='Select All':
                 self.tempButton.config(text='Exclude All')
                 for c in range(len(self.playerBtts)):
                     self.playerBtts[c].config(bg=self.players[c]['color'], fg='black')
@@ -458,7 +458,6 @@ class GUI:
                 for c in range(len(self.playerBtts)):
                     self.playerBtts[c].config(bg='black', fg=self.players[c]['color'])
                     self.players[c]['selected'] = False
-            self.switch=not self.switch
 
         def createSidebarButtons(self):
             for playerBtt in self.playerBtts:
@@ -474,7 +473,6 @@ class GUI:
                                     command=lambda c=i: self.onPlayerClick(c))
                 self.playerBtts.append(tempButton)
                 self.playerBtts[-1].place(relwidth=1, relheight=0.1, rely = 0.1*(len(self.playerBtts)-1))
-            self.switch=True
             self.tempButton = Button(self.sidebar,
                                     fg = 'white',
                                     bg = 'black', text = 'Select All',
@@ -551,9 +549,9 @@ class GUI:
                 self.Window2.resizable(width = False, height = False) 
                 self.Window2.configure(width = 500, height = 500, bg = 'black')
                 self.label = Label(self.Window2, bg = 'black', width=50, text = '', font = "Courier 14 bold", pady=5) 
-                self.label.pack(expand=False, side='top')
+                self.label.pack(expand=False)
                 self.progress = ttk.Progressbar(self.Window2, orient=HORIZONTAL, length = 406, mode='determinate')
-                self.progress.pack(expand=False, padx=10, pady=10, side='bottom')
+                self.progress.pack(expand=False, padx=10, pady=10)
                 self.progress['value']=1/4
                 self.barracrit1=Label(self.progress, bg = 'red')                 
                 self.barracrit1.place(relwidth=0.0025,relheight=1,x=1)
