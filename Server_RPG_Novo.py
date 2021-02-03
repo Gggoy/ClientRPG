@@ -26,6 +26,9 @@ class msg:
         self.content=content
         self.cor=cor
 
+class roll:
+    2
+
 # Create a socket
 # socket.AF_INET - address family, IPv4, some other possible are AF_INET6, AF_BLUETOOTH, AF_UNIX
 # socket.SOCK_STREAM - TCP, conection-based, socket.SOCK_DGRAM - UDP, connectionless, datagrams, socket.SOCK_RAW - raw IP packets
@@ -70,7 +73,7 @@ def send_rolagem(rolagem,r,crit):
         send_new_message(notifi2,rolagem['caller'])
         opposite_message=(rolagem['hidden_message']=='n')*'Sim.'+(rolagem['hidden_message']=='s')*'Não.'
         rolagem['hidden_message']=(rolagem['hidden_message']=='s')*'Sim.'+(rolagem['hidden_message']=='n')*'Não.'
-        notifi+=(r<=rolagem['p'])*rolagem['hidden_message']+(r>rolagem['p'])*opposite_message
+        notifi+='\g'+(r<=rolagem['p'])*rolagem['hidden_message']+(r>rolagem['p'])*opposite_message
         notifi=pickle.dumps(msg('Server',notifi,colore))
         send_new_message(notifi,rolagem['receiver'])
         print((r<=rolagem['p'])*rolagem['hidden_message']+(r>rolagem['p'])*opposite_message)
@@ -301,7 +304,7 @@ while True:
                         notified_socket.send(message["header"] + message['data'])
 
                 elif type(messagepf).__name__=='roll':                       
-                        if messagepf.who=='h':
+                        if messagepf.who=='hidden':
                             notifi=pickle.dumps(msg('Server',"Confira o que você espera enviar ao oponente em caso de sucesso dele (s ou n).",colore))
                             send_new_message(notifi,notified_socket)
                         for client_socket in clients:
@@ -313,9 +316,10 @@ while True:
                                     user['calling'].append(client_socket)
                                     notifi=pickle.dumps(msg('Server',check+" encontra-se disponível.",colore))
                                     send_new_message(notifi,notified_socket)
-                                    notifi=user['data']+" iniciou "+str(roladas)+" rolagem(ns) com você com a tag "+messagepf.who+(roladas>1)*"\nRecomenda-se ler o resultado anterior para inserir o próximo bloco para evitar repetição de recursos."+"\nBloco da primeira rolagem:"
+                                    notifi=user['data']+" iniciou "+str(roladas)+" rolagem(ns) com você com a tag "+messagepf.who+(roladas>1)*"\gRecomenda-se ler o resultado anterior para inserir o próximo bloco para evitar repetição de recursos."+"\gBloco da primeira rolagem:"
                                     notifi=pickle.dumps(msg('Server',notifi,colore))
                                     send_new_message(notifi,client_socket)
+                                    send_new_message(message['data'],client_socket)
                                     rolls[client_socket]=[{'advan': 0,'receiver': client_socket,'caller': notified_socket,'ready':0,'p':1000,'q':2000,'send_type': messagepf.who}]
                                     for i in range(roladas-1):
                                         rolls[client_socket].append({'advan': 0,'receiver': client_socket,'caller': notified_socket,'ready':0,'p':1000,'q':2000,'send_type': messagepf.who})
@@ -398,27 +402,27 @@ while True:
 
                     else:
                         
-                        login_message=True
+                        login_message='ok'
                         user['data']=user['data'].decode('utf-8').replace(' ','_')
 
                         if len(sockets_list)>=10:
                             sockets_list.remove(notified_socket)
                             login_message='Servidor lotado'
 
-                        if login_message==True:
+                        if login_message=='ok':
                             for socket in clients:
                                 if clients[socket]['data']==user['data']:
                                     login_message='Username já em uso, tente outro'
 
-                        if login_message==True:
+                        if login_message=='ok':
                             if user['data']=='Server' or user['data']=='':
                                 login_message='Username não pode ser Server ou ser branco, tente outro'
 
-                        if login_message==True:
+                        if login_message=='ok':
                             if '\\' in user['data']:
                                 login_message='Retire caracteres \ do username'
 
-                        if login_message==True:
+                        if login_message=='ok':
                             if len(user['data'])>12:
                                 login_message='Username pode conter até 12 caracteres, tente outro'
                             else:

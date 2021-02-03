@@ -369,8 +369,7 @@ class msg:
         self.content=content
 
 class roll:
-    def __init__(self,caller,receiver,who):
-        self.caller=caller
+    def __init__(self,receiver,who):
         self.receiver=receiver
         self.who=who
 
@@ -448,14 +447,28 @@ class GUI:
             self.playerBtts[c].config(bg=self.playerBtts[c].cget('fg'), fg=self.playerBtts[c].cget('bg'))
             self.players[c]['selected'] = not self.players[c]['selected']
 
+        def onPlayerSelec(self, c):
+            nomiz=self.playerBtts2[c].cget('text')
+            self.roll_list.append(nomiz)
+            if self.label.cget('text')=='Select the players to roll':
+                self.label.config(text='Selected:')
+            self.label.config(text=self.label.cget('text')+' '+nomiz+'-')
+
+        def rollerrola(self):
+            message_sent = pickle.dumps(roll(self.roll_list,'we'))
+            message_sent_header = f"{len(message_sent):<{HEADER_LENGTH}}".encode(FORMAT)
+            client.send(message_sent_header+message_sent)
+            self.roll_list=[]
+            self.label.config(text='Select the players to roll')
+            
         def AllClick(self):
-            if self.tempButton.cget('text')=='Select All':
-                self.tempButton.config(text='Exclude All')
+            if self.allButton.cget('text')=='Select all':
+                self.allButton.config(text='Exclude all')
                 for c in range(len(self.playerBtts)):
                     self.playerBtts[c].config(bg=self.players[c]['color'], fg='black')
                     self.players[c]['selected'] = True
             else:
-                self.tempButton.config(text='Select All')
+                self.allButton.config(text='Select all')
                 for c in range(len(self.playerBtts)):
                     self.playerBtts[c].config(bg='black', fg=self.players[c]['color'])
                     self.players[c]['selected'] = False
@@ -463,8 +476,11 @@ class GUI:
         def createSidebarButtons(self):
             for playerBtt in self.playerBtts:
                 playerBtt.destroy()
+            for playerBtt in self.playerBtts2:
+                playerBtt.destroy()
 
             self.playerBtts = []
+            self.playerBtts2 = []
 
             for i in range(len(self.players)):
                 tempButton = Button(self.sidebar,
@@ -473,24 +489,31 @@ class GUI:
                                     font = "Courier 14 bold",
                                     command=lambda c=i: self.onPlayerClick(c))
                 self.playerBtts.append(tempButton)
-                self.playerBtts[-1].place(relwidth=1, relheight=0.1, rely = 0.1*(len(self.playerBtts)))
-            self.tempButton = Button(self.sidebar,
-                                    fg = 'white',
-                                    bg = 'black', text = 'Select All',
+                self.playerBtts[-1].place(relwidth=1, relheight=0.1, rely = 0.1*(len(self.playerBtts)-1))
+
+                tempButton = Button(self.sidebaroll,
+                                    fg = self.players[i]['color'],
+                                    bg = 'black', text = self.players[i]['name'],
                                     font = "Courier 14 bold",
-                                    command=lambda: self.AllClick())
-            self.tempButton.place(relwidth=1, relheight=0.1)
+                                    command=lambda c=i: self.onPlayerSelec(c))
+                self.playerBtts2.append(tempButton)
+                self.playerBtts2[-1].place(relwidth=1, relheight=0.1, rely = 0.1*(len(self.playerBtts2)-1))
                 
         def displayres(self,res):
             self.label.config(text='Crítico: '+str(res.crit)+'; Sucesso: '+str(res.p)+'; Rolado: '+str(res.r))
-            self.progress['value']=0
             res.p=res.p//5
             res.r=res.r//5
             res.crit=res.crit//5
-            self.barracrit1.place(x=res.crit+1)
-            self.barrap1.place(x=res.p+1)
-            self.barracrit2.place(x=res.crit+3)
-            self.barrap2.place(x=res.p+3)
+            #self.progress = ttk.Progressbar(self.Window2, orient=HORIZONTAL, length = 406, mode='determinate')
+            #self.progress.pack(expand=False, padx=10, pady=10)
+            #self.barrap1=Label(self.progress, bg = 'orange')                 
+            #self.barrap2=Label(self.progress, bg = 'orange')                 
+            #self.barracrit1=Label(self.progress, bg = 'red')                 
+            #self.barracrit2=Label(self.progress, bg = 'red') 
+            self.barracrit1.place(relwidth=0.0025,x=res.crit+1)
+            self.barrap1.place(relwidth=0.0025,x=res.p+1)
+            self.barracrit2.place(relwidth=0.0025,x=res.crit+3)
+            self.barrap2.place(relwidth=0.0025,x=res.p+3)
             for i in range(9):
                 time.sleep(0.7)
                 if 4*self.progress['value']+2**(8-i)<=res.r:
@@ -517,7 +540,7 @@ class GUI:
                 server_message_header=client.recv(HEADER_LENGTH)
                 server_message_length = int(server_message_header.decode(FORMAT).strip())
                 server_message=client.recv(server_message_length).decode(FORMAT)
-                if server_message==True:
+                if server_message=='ok':
                         try:
                             color=askcolor(title ="Escolha a cor do seu usuário")[1].encode(FORMAT)
                         except:
@@ -548,8 +571,6 @@ class GUI:
                 self.sidebar = Frame(self.Window, bg = 'black', width=200, height=500)
                 self.sidebar.pack(expand = False, fill = 'both', side = 'left')
 
-                self.playerBtts = []
-                self.createSidebarButtons()
                 
                 self.sep = Label(self.Window, bg = 'white')
                 self.sep.pack(expand = False, fill = 'both', side = 'left')
@@ -562,7 +583,6 @@ class GUI:
 
                 self.bttframe = Frame(self.Window, width=30, height=500)
                 self.bttframe.pack(expand=False, side='left')
-                
                 self.blocbtt= Button(self.bttframe, 
                                                         text = ">", 
                                                         font = "Courier 12 bold", 
@@ -575,21 +595,19 @@ class GUI:
                 self.Window2.title("ROLL") 
                 self.Window2.resizable(width = False, height = False) 
                 self.Window2.configure(width = 500, height = 500, bg = 'black')
-                self.label = Label(self.Window2, bg = 'black',fg='white', width=50, text = '', font = "Courier 14 bold", pady=5) 
+                self.label = Label(self.Window2,text='Select the players to roll', bg = 'black',fg='white', width=50, font = "Courier 14 bold", pady=5) 
                 self.label.pack(expand=False)
-                self.progress = ttk.Progressbar(self.Window2, orient=HORIZONTAL, length = 406, mode='determinate')
-                self.progress.pack(expand=False, padx=10, pady=10)
-                self.progress['value']=1/4
-                self.barracrit1=Label(self.progress, bg = 'red')                 
-                self.barracrit1.place(relwidth=0.0025,relheight=1,x=1)
-                self.barracrit2=Label(self.progress, bg = 'red')                 
-                self.barracrit2.place(relwidth=0.0025,relheight=1,x=3)
-                self.barrap1=Label(self.progress, bg = 'orange')                 
-                self.barrap1.place(relwidth=0.0025,relheight=1,x=1)
-                self.barrap2=Label(self.progress, bg = 'orange')                 
-                self.barrap2.place(relwidth=0.0025,relheight=1,x=3)
+                self.sidebaroll = Frame(self.Window2, bg = 'black', width=200, height=500)
+                self.sidebaroll.pack(expand = False, fill = 'both', side = 'left')
+                self.sep3 = Label(self.Window2, bg = 'white')
+                self.sep3.pack(expand = False, fill = 'both', side = 'left')
                 self.Window2.protocol("WM_DELETE_WINDOW", self.blocswitch)
                 self.Window2.withdraw()
+
+                self.playerBtts = []
+                self.playerBtts2 = []
+                self.roll_list=[]
+                self.createSidebarButtons()
 
                 self.labelHead = Label(self.mainFrame, bg = 'black', text = self.name, font = "Courier 14 bold", pady=5) 
                 self.labelHead.place(relwidth=1)
@@ -627,19 +645,22 @@ class GUI:
                                                             command = lambda : self.sendButton(self.entryMsg.get())) 
                 self.buttonMsg.place(x = 428, 
                                                     y = 5, 
-                                                    height = 33, 
-                                                    width = 63) 
+                                                    height = 66, 
+                                                    width = 126) 
                 
-                self.rollBtt = Button(self.labelBottom, 
+                self.rollBtt = Button(self.sidebaroll, 
                                                         text = "Roll", 
                                                         font = "Courier 12 bold", 
-                                                        width = 10, 
-                                                        bg = 'black')
-                                                        #command = lambda : self.sendButton(self.entryMsg.get())) 
-                self.rollBtt.place(x = 491, 
-                                                y = 38, 
-                                                height = 33, 
-                                                width = 63) 
+                                                        bg = 'black', fg='white',
+                                                        command = lambda : self.rollerrola()) 
+                self.rollBtt.place(relwidth=1, relheight=0.1,rely=0.9)
+    
+                self.allButton = Button(self.sidebar,
+                                    fg = 'white',
+                                    bg = 'black', text = 'Select all',
+                                    font = "Courier 14 bold",
+                                    command=lambda: self.AllClick())
+                self.allButton.place(relwidth=1, relheight=0.1,rely=0.9)
 
                 self.textCons.config(cursor = "arrow") 
                 self.textCons.config(state = DISABLED) 
@@ -671,8 +692,7 @@ class GUI:
 
         def changecolor(self,i):
             global colors
-            self.buttonMsg.config(fg=colors[(i-8)%100])
-            self.rollBtt.config(fg=colors[(i-10)%100])
+            self.buttonMsg.config(fg=colors[(i-9)%100])
             self.entryMsg.config(fg=colors[(i-9)%100])
             self.labelHead.config(fg=colors[i])
             self.line.config(bg=colors[(i-2)%100])
@@ -738,6 +758,7 @@ class GUI:
                                     for dics in message:
                                         dics['selected'] = False
                                         self.players.append(dics)
+                                    break
                         except:   
                             self.on_closing()
                 
