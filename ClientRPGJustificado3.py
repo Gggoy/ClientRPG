@@ -374,6 +374,13 @@ class roll:
         self.receiver=receiver
         self.who=who
 
+class res:
+    def __init__(self,p,crit,r,advan):
+        self.p=p
+        self.r=r
+        self.crit=crit
+        self.advan=advan
+
 # GUI class for the chat 
 class GUI: 
         # constructor method 
@@ -485,11 +492,11 @@ class GUI:
             self.barracrit2.place(x=res.crit+3)
             self.barrap2.place(x=res.p+3)
             for i in range(9):
+                time.sleep(0.5)
                 if 4*self.progress['value']+2**(8-i)<=res.r:
                     self.progress['value']+=2**(6-i)
                     if self.progress['value']==res.r:
                         break
-                time.sleep(0.5)
 
         def on_closing(self):
                 client.close()
@@ -555,9 +562,7 @@ class GUI:
 
                 self.bttframe = Frame(self.Window, width=30, height=500)
                 self.bttframe.pack(expand=False, side='left')
-
-                self.Window2=Tk()
-
+                
                 self.blocbtt= Button(self.bttframe, 
                                                         text = ">", 
                                                         font = "Courier 12 bold", 
@@ -566,10 +571,11 @@ class GUI:
                                                         command = lambda : self.blocswitch())
                 self.blocbtt.place(relheight=1,relwidth=1)
                 
+                self.Window2=Toplevel(self.Window)
                 self.Window2.title("ROLL") 
                 self.Window2.resizable(width = False, height = False) 
                 self.Window2.configure(width = 500, height = 500, bg = 'black')
-                self.label = Label(self.Window2, bg = 'black', width=50, text = '', font = "Courier 14 bold", pady=5) 
+                self.label = Label(self.Window2, bg = 'black',fg='white', width=50, text = '', font = "Courier 14 bold", pady=5) 
                 self.label.pack(expand=False)
                 self.progress = ttk.Progressbar(self.Window2, orient=HORIZONTAL, length = 406, mode='determinate')
                 self.progress.pack(expand=False, padx=10, pady=10)
@@ -688,8 +694,8 @@ class GUI:
                                 message_length = int(message_header.decode(FORMAT).strip())
                                 message = client.recv(message_length)
                                 message=pickle.loads(message)
-                                #if type(message).__name__!='list':
-                                    #message=res(1000,100,7)
+                                if type(message).__name__!='list':
+                                    message=res(1000,1900,1950,2)
                                 if type(message).__name__=='msg':
                                     message_final = message.sender+' > '+message.content
                                     # insert messages to text box 
@@ -727,7 +733,7 @@ class GUI:
                                     self.createSidebarButtons()
                                 elif type(message).__name__=='res':
                                     if not self.Window2.winfo_viewable():
-                                        self.Window2.deiconify()
+                                        self.blocswitch()
                                     self.displayres(message)
                                 else:
                                     self.players = []

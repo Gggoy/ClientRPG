@@ -18,6 +18,7 @@ class res:
         self.p=p
         self.r=r
         self.crit=crit
+        self.advan=advan
 
 class msg:
     def __init__(self,sender,content,cor):
@@ -74,17 +75,18 @@ def send_rolagem(rolagem,r,crit):
         send_new_message(notifi,rolagem['receiver'])
         print((r<=rolagem['p'])*rolagem['hidden_message']+(r>rolagem['p'])*opposite_message)
     else:
+        notifi="Rolagem entre "+clients[rolagem['receiver']]['data']+' e '+str(clients[rolagem['caller']]['data'])
         if r<=crit:
-            notifi='Crítico'
+            notifi+='\gCrítico'
         elif r<=rolagem['p']:
-            notifi='Sucesso'
+            notifi+='\gSucesso'
         else:
-            notifi='Fracasso'
+            notifi+='\gFracasso'
         rolagem['p'],crit,r=2000-rolagem['p'],2000-crit,2000-r
-        notifi+='\gNet Advantage: '+str(rolagem['advan'])+'\gInfo: '+str(r)+' de '+str(rolagem['p'])+"\gRolagem entre "+clients[rolagem['receiver']]['data']+' e '+str(clients[rolagem['caller']]['data'])
+        notifi+='\gNet Advantage: '+str(rolagem['advan'])+'\gInfo: '+str(r)+' de '+str(rolagem['p'])
         print(notifi)
         notifi=pickle.dumps(msg('Server',notifi,colore))
-        notifi2=pickle.dumps(res(rolagem['p'],crit,r))
+        notifi2=pickle.dumps(res(rolagem['p'],crit,r,rolagem['advan']))
         if rolagem['send_type']=='me':
             send_new_message(notifi,rolagem['caller'])
             send_new_message(notifi2,rolagem['caller'])
