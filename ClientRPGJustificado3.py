@@ -538,26 +538,6 @@ class GUI:
                 self.Window.resizable(width = False, height = False) 
                 self.Window.configure(width = 800, height = 500, bg = 'black')
 
-                self.Window2=Tk()
-                self.Window2.title("ROLL") 
-                self.Window2.resizable(width = False, height = False) 
-                self.Window2.configure(width = 500, height = 500, bg = 'black')
-                self.label = Label(self.Window2, bg = 'black', width=50, text = '', font = "Courier 14 bold", pady=5) 
-                self.label.pack(expand=False)
-                self.progress = ttk.Progressbar(self.Window2, orient=HORIZONTAL, length = 406, mode='determinate')
-                self.progress.pack(expand=False, padx=10, pady=10)
-                self.progress['value']=1/4
-                self.barracrit1=Label(self.progress, bg = 'red')                 
-                self.barracrit1.place(relwidth=0.0025,relheight=1,x=1)
-                self.barracrit2=Label(self.progress, bg = 'red')                 
-                self.barracrit2.place(relwidth=0.0025,relheight=1,x=3)
-                self.barrap1=Label(self.progress, bg = 'orange')                 
-                self.barrap1.place(relwidth=0.0025,relheight=1,x=1)
-                self.barrap2=Label(self.progress, bg = 'orange')                 
-                self.barrap2.place(relwidth=0.0025,relheight=1,x=3)
-                self.Window2.protocol("WM_DELETE_WINDOW", self.Window2.withdraw())
-                self.Window2.withdraw()
-
                 self.sidebar = Frame(self.Window, bg = 'black', width=200, height=500)
                 self.sidebar.pack(expand = False, fill = 'both', side = 'left')
 
@@ -576,6 +556,8 @@ class GUI:
                 self.bttframe = Frame(self.Window, width=30, height=500)
                 self.bttframe.pack(expand=False, side='left')
 
+                self.Window2=Tk()
+
                 self.blocbtt= Button(self.bttframe, 
                                                         text = ">", 
                                                         font = "Courier 12 bold", 
@@ -583,6 +565,25 @@ class GUI:
                                                         bg='black',
                                                         command = lambda : self.blocswitch())
                 self.blocbtt.place(relheight=1,relwidth=1)
+                
+                self.Window2.title("ROLL") 
+                self.Window2.resizable(width = False, height = False) 
+                self.Window2.configure(width = 500, height = 500, bg = 'black')
+                self.label = Label(self.Window2, bg = 'black', width=50, text = '', font = "Courier 14 bold", pady=5) 
+                self.label.pack(expand=False)
+                self.progress = ttk.Progressbar(self.Window2, orient=HORIZONTAL, length = 406, mode='determinate')
+                self.progress.pack(expand=False, padx=10, pady=10)
+                self.progress['value']=1/4
+                self.barracrit1=Label(self.progress, bg = 'red')                 
+                self.barracrit1.place(relwidth=0.0025,relheight=1,x=1)
+                self.barracrit2=Label(self.progress, bg = 'red')                 
+                self.barracrit2.place(relwidth=0.0025,relheight=1,x=3)
+                self.barrap1=Label(self.progress, bg = 'orange')                 
+                self.barrap1.place(relwidth=0.0025,relheight=1,x=1)
+                self.barrap2=Label(self.progress, bg = 'orange')                 
+                self.barrap2.place(relwidth=0.0025,relheight=1,x=3)
+                self.Window2.protocol("WM_DELETE_WINDOW", self.blocswitch)
+                self.Window2.withdraw()
 
                 self.labelHead = Label(self.mainFrame, bg = 'black', text = self.name, font = "Courier 14 bold", pady=5) 
                 self.labelHead.place(relwidth=1)
