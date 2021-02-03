@@ -473,13 +473,13 @@ class GUI:
                                     font = "Courier 14 bold",
                                     command=lambda c=i: self.onPlayerClick(c))
                 self.playerBtts.append(tempButton)
-                self.playerBtts[-1].place(relwidth=1, relheight=0.1, rely = 0.1*(len(self.playerBtts)-1))
+                self.playerBtts[-1].place(relwidth=1, relheight=0.1, rely = 0.1*(len(self.playerBtts)))
             self.tempButton = Button(self.sidebar,
                                     fg = 'white',
                                     bg = 'black', text = 'Select All',
                                     font = "Courier 14 bold",
                                     command=lambda: self.AllClick())
-            self.tempButton.place(relwidth=1, relheight=0.1, rely = 0.1*len(self.playerBtts))
+            self.tempButton.place(relwidth=1, relheight=0.1)
                 
         def displayres(self,res):
             self.label.config(text='Crítico: '+str(res.crit)+'; Sucesso: '+str(res.p)+'; Rolado: '+str(res.r))
@@ -492,7 +492,7 @@ class GUI:
             self.barracrit2.place(x=res.crit+3)
             self.barrap2.place(x=res.p+3)
             for i in range(9):
-                time.sleep(0.5)
+                time.sleep(0.7)
                 if 4*self.progress['value']+2**(8-i)<=res.r:
                     self.progress['value']+=2**(6-i)
                     if self.progress['value']==res.r:
@@ -694,8 +694,6 @@ class GUI:
                                 message_length = int(message_header.decode(FORMAT).strip())
                                 message = client.recv(message_length)
                                 message=pickle.loads(message)
-                                if type(message).__name__!='list':
-                                    message=res(1000,1900,1950,2)
                                 if type(message).__name__=='msg':
                                     message_final = message.sender+' > '+message.content
                                     # insert messages to text box 
