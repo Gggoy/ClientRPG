@@ -151,14 +151,14 @@ def apply_posmod_pos(receiver,fonte,rolagem,r):
                             rolagem['p']+=i*50
                 elif type(i)==list:
                     if r<=rolagem['p'] and i[0]<0:
-                        if r-i[0]*(i[1]+1)*25>rolagem['p']:
+                        if r-i[0]*i[1]*50>rolagem['p']:
                             mod[0]-=1
                             notifi='Usado o recurso '+i+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'. Restam '+str(mod[0])+' desse recurso.'
                             notifi=pickle.dumps(msg('Server',notifi,colore))
                             send_new_message(notifi,receiver)
                             rolagem['p']+=i[0]*random.randint(1,i[1])*50
                     elif r>rolagem['p'] and i[0]>0:
-                        if r-i[0]*(i[1]+1)*25<=rolagem['p']:
+                        if r-i[0]*i[1]*50<=rolagem['p']:
                             mod[0]-=1
                             notifi='Usado o recurso '+i+' em '+mod[1]+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'. Restam '+str(mod[0])+' desse recurso.'
                             notifi=pickle.dumps(msg('Server',notifi,colore))
