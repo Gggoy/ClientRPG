@@ -452,7 +452,7 @@ class GUI:
             self.roll_list.append(nomiz)
             if self.label.cget('text')=='Select the players to roll':
                 self.label.config(text='Selected:')
-            self.label.config(text=self.label.cget('text')+' '+nomiz+'-')
+            self.label.config(text=self.label.cget('text')+' '+nomiz+' -')
 
         def rollerrola(self):
             message_sent = pickle.dumps(roll(self.roll_list,'we'))
@@ -685,8 +685,8 @@ class GUI:
             try:
                 while True:
                     for i in range(len(colors)):
-                        time.sleep(0.5)
                         self.changecolor(i)
+                        time.sleep(0.5)
             except:
                 self.on_closing()
 

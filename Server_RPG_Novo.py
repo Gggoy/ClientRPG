@@ -110,7 +110,7 @@ def apply_posmod_pre(receiver,fonte,rolagem):
                     if i[1]!='*':
                         if i[0]!=0:
                             rolagem['p']+=i[0]*(i[1]+1)*25
-                            if random.randint(1,20)<=i[0]*i[1]/2:
+                            if random.randint(1,40)<=i[0]*i[1]:
                                 mod[0]-=1
                                 notifi='Usado o recurso '+str(i[0])+'d'+str(i[1])+' em '+str(mod[1])+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'. Restam '+str(mod[0])+' desse recurso.'
                                 notifi=pickle.dumps(msg('Server',notifi,colore))
@@ -171,7 +171,7 @@ def rola(rolagem):
         return
     caller=rolagem['caller']
     recibru=rolagem['receiver']
-    rolls[recibru].pop(0)
+    rolls[recibru].pop()
     apply_posmod_pre(recibru,rolagem,rolagem)
     apply_posmod_pre(caller,rolls[caller],rolagem)
     rolagem['p']+=(rolagem['advan']==1)*300+(rolagem['advan']==2)*500+(rolagem['advan']>2)*600
@@ -342,10 +342,10 @@ while True:
                     if user['rolling']:
                         rolls[notified_socket][0]['posmod']=messagepf.posmod
                         if not user['calling']:
-                            rolls[notified_socket][0]['p']+=50*messagepf.premod[0]
-                            rolls[notified_socket][0]['advan']+=messagepf.premod[1]
-                            rolls[notified_socket][0]['ready']+=1
-                            rola(rolls[called_socket][0]) 
+                            rolls[notified_socket][-1]['p']+=50*messagepf.premod[0]
+                            rolls[notified_socket][-1]['advan']+=messagepf.premod[1]
+                            rolls[notified_socket][-1]['ready']+=1
+                            rola(rolls[called_socket][-1]) 
                         else:
                             if rolls[notified_socket]['send_type']=='hidden':
                                 for called_socket in user['calling']:
@@ -416,7 +416,7 @@ while True:
 
                         if login_message=='ok':
                             if user['data']=='Server' or user['data']=='':
-                                login_message='Username não pode ser Server ou ser branco, tente outro'
+                                login_message='Username não pode ser Server ou ser em branco, tente outro'
 
                         if login_message=='ok':
                             if '\\' in user['data']:
