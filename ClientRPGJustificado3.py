@@ -481,19 +481,19 @@ class GUI:
             self.tempButton.place(relwidth=1, relheight=0.1, rely = 0.1*len(self.playerBtts))
                 
         def displayres(self,res):
-            self.label.config(text='Crítico: '+str(res['crit'])+'; Sucesso: '+str(res['p'])+'; Rolado: '+str(res['r']))
+            self.label.config(text='Crítico: '+str(res.crit)+'; Sucesso: '+str(res.p)+'; Rolado: '+str(res.r))
             self.progress['value']=0
-            p=res['p']//5
-            r=res['r']//5
-            crit=res['crit']//5
-            self.barracrit1.config(x=crit+1)
-            self.barrap1.config(x=p+1)
-            self.barracrit2.config(x=crit+3)
-            self.barrap2.config(x=p+3)
+            res.p=(2000-res.p)//5
+            res.r=(2000-res.r)//5
+            res.crit=(2000-res.crit)//5
+            self.barracrit1.place(x=res.crit+1)
+            self.barrap1.place(x=res.p+1)
+            self.barracrit2.place(x=res.crit+3)
+            self.barrap2.place(x=res.p+3)
             for i in range(9):
-                if 4*self.progress['value']+2**(8-i)<=r:
+                if 4*self.progress['value']+2**(8-i)<=res.r:
                     self.progress['value']+=2**(6-i)
-                    if self.progress['value']==r:
+                    if self.progress['value']==res.r:
                         break
                 time.sleep(0.5)
 
