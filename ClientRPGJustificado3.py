@@ -368,12 +368,6 @@ class msg:
         self.destiny=destiny
         self.content=content
 
-class res:
-    def __init__(self,p,crit,r):
-        self.p=p
-        self.r=r
-        self.crit=crit
-
 class roll:
     def __init__(self,caller,receiver,who):
         self.caller=caller
@@ -483,9 +477,9 @@ class GUI:
         def displayres(self,res):
             self.label.config(text='Crítico: '+str(res.crit)+'; Sucesso: '+str(res.p)+'; Rolado: '+str(res.r))
             self.progress['value']=0
-            res.p=(2000-res.p)//5
-            res.r=(2000-res.r)//5
-            res.crit=(2000-res.crit)//5
+            res.p=res.p//5
+            res.r=res.r//5
+            res.crit=res.crit//5
             self.barracrit1.place(x=res.crit+1)
             self.barrap1.place(x=res.p+1)
             self.barracrit2.place(x=res.crit+3)
@@ -561,6 +555,7 @@ class GUI:
                 self.barrap1.place(relwidth=0.0025,relheight=1,x=1)
                 self.barrap2=Label(self.progress, bg = 'orange')                 
                 self.barrap2.place(relwidth=0.0025,relheight=1,x=3)
+                self.Window2.protocol("WM_DELETE_WINDOW", self.Window2.withdraw())
                 self.Window2.withdraw()
 
                 self.sidebar = Frame(self.Window, bg = 'black', width=200, height=500)

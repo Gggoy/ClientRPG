@@ -13,6 +13,11 @@ hostname = socket.gethostname()
 
 IP = socket.gethostbyname(hostname)
 PORT = 1234
+class res:
+    def __init__(self,p,crit,r,advan):
+        self.p=p
+        self.r=r
+        self.crit=crit
 
 class msg:
     def __init__(self,sender,content,cor):
@@ -58,29 +63,39 @@ def send_new_message(notifi,client_socket):
     client_socket.send(notifi_header+notifi)
 
 def send_rolagem(rolagem,r,crit):
-    if r<=crit:
-        notifi='Crítico\gNet Advantage: '+str(rolagem['advan'])
-    elif r<=rolagem['p']:
-        notifi='Sucesso\gNet Advantage: '+str(rolagem['advan'])
-    else:
-        notifi='Fracasso\gNet Advantage: '+str(rolagem['advan'])
-    notifi+=rolagem['res']*('\gInfo: '+str(round(20-20*r/rolagem['q'],2))+' de '+str(round(20-20*rolagem['p']/rolagem['q'],2)))+"\gRolagem de "+clients[rolagem['receiver']]['data']
-    print(notifi+' e '+clients[rolagem['caller']]['data'])
-    notifi=pickle.dumps(msg('Server',notifi,colore))
-    if rolagem['send_type']=='-me':
-        send_new_message(notifi,rolagem['caller'])
-    elif rolagem['send_type']=='-you':
-        send_new_message(notifi,rolagem['receiver'])
-    elif rolagem['send_type']=='-we':
-        send_new_message(notifi,rolagem['caller'])
-        send_new_message(notifi,rolagem['receiver'])
-    else:
+    if rolagem['send_type']=='hidden':
+        notifi="Rolagem entre "+clients[rolagem['receiver']]['data']+' e '+str(clients[rolagem['caller']]['data'])+'\gNet Advantage: '+str(rolagem['advan'])
+        notifi2=pickle.dumps(msg('Server',notifi,colore))
+        send_new_message(notifi2,rolagem['caller'])
         opposite_message=(rolagem['hidden_message']=='n')*'Sim.'+(rolagem['hidden_message']=='s')*'Não.'
         rolagem['hidden_message']=(rolagem['hidden_message']=='s')*'Sim.'+(rolagem['hidden_message']=='n')*'Não.'
-        notifi=(r<=rolagem['p'])*rolagem['hidden_message']+(r>rolagem['p'])*opposite_message+'\gNet Advantage: '+str(rolagem['advan'])
+        notifi+=(r<=rolagem['p'])*rolagem['hidden_message']+(r>rolagem['p'])*opposite_message
         notifi=pickle.dumps(msg('Server',notifi,colore))
         send_new_message(notifi,rolagem['receiver'])
         print((r<=rolagem['p'])*rolagem['hidden_message']+(r>rolagem['p'])*opposite_message)
+    else:
+        if r<=crit:
+            notifi='Crítico'
+        elif r<=rolagem['p']:
+            notifi='Sucesso'
+        else:
+            notifi='Fracasso'
+        rolagem['p'],crit,r=2000-rolagem['p'],2000-crit,2000-r
+        notifi+='\gNet Advantage: '+str(rolagem['advan'])+'\gInfo: '+str(r)+' de '+str(rolagem['p'])+"\gRolagem entre "+clients[rolagem['receiver']]['data']+' e '+str(clients[rolagem['caller']]['data'])
+        print(notifi)
+        notifi=pickle.dumps(msg('Server',notifi,colore))
+        notifi2=pickle.dumps(res(rolagem['p'],crit,r))
+        if rolagem['send_type']=='me':
+            send_new_message(notifi,rolagem['caller'])
+            send_new_message(notifi2,rolagem['caller'])
+        elif rolagem['send_type']=='you':
+            send_new_message(notifi,rolagem['receiver'])
+            send_new_message(notifi2,rolagem['receiver'])
+        elif rolagem['send_type']=='we':
+            send_new_message(notifi,rolagem['caller'])
+            send_new_message(notifi2,rolagem['caller'])
+            send_new_message(notifi,rolagem['receiver'])
+            send_new_message(notifi2,rolagem['receiver'])        
 
 def apply_posmod_pre(receiver,fonte,rolagem):
     for mod in fonte['posmod']:
@@ -283,9 +298,8 @@ while True:
                         notified_socket.send(message["header"] + message['data'])
 
                 elif type(messagepf).__name__=='roll':                       
-                        if messagepf.who=='hidden':
-                            notifi="Confira o que você espera enviar ao oponente em caso de sucesso dele (s ou n)."
-                            notifi=pickle.dumps(msg('Server',notifi,colore))
+                        if messagepf.who=='h':
+                            notifi=pickle.dumps(msg('Server',"Confira o que você espera enviar ao oponente em caso de sucesso dele (s ou n).",colore))
                             send_new_message(notifi,notified_socket)
                         for client_socket in clients:
                             check=clients[client_socket]['data']
@@ -294,10 +308,9 @@ while True:
                                 if not clients[client_socket]['rolling']:
                                     clients[client_socket]['rolling']+=roladas
                                     user['calling'].append(client_socket)
-                                    notifi=check+" encontra-se disponível."
-                                    notifi=pickle.dumps(msg('Server',notifi,colore))
+                                    notifi=pickle.dumps(msg('Server',check+" encontra-se disponível.",colore))
                                     send_new_message(notifi,notified_socket)
-                                    notifi=user['data']+" iniciou "+str(roladas)+" rolagem(ns) com você com as tags: "+messagepf.who+messagepf.hidden*'e hidden'+(roladas>1)*"\nRecomenda-se ler o resultado anterior para inserir o próximo bloco para evitar repetição de recursos."+"\nBloco da primeira rolagem:"
+                                    notifi=user['data']+" iniciou "+str(roladas)+" rolagem(ns) com você com a tag "+messagepf.who+(roladas>1)*"\nRecomenda-se ler o resultado anterior para inserir o próximo bloco para evitar repetição de recursos."+"\nBloco da primeira rolagem:"
                                     notifi=pickle.dumps(msg('Server',notifi,colore))
                                     send_new_message(notifi,client_socket)
                                     rolls[client_socket]=[{'advan': 0,'receiver': client_socket,'caller': notified_socket,'ready':0,'p':1000,'q':2000,'send_type': messagepf.who}]
