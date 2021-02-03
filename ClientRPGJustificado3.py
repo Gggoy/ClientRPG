@@ -517,7 +517,7 @@ class GUI:
                 server_message_header=client.recv(HEADER_LENGTH)
                 server_message_length = int(server_message_header.decode(FORMAT).strip())
                 server_message=client.recv(server_message_length).decode(FORMAT)
-                if server_message=='Ok':
+                if server_message==True:
                         try:
                             color=askcolor(title ="Escolha a cor do seu usuário")[1].encode(FORMAT)
                         except:
@@ -689,7 +689,7 @@ class GUI:
         # function to receive messages 
         def receive(self): 
                 while True: 
-                        #try:
+                        try:
                                 message_header = client.recv(HEADER_LENGTH)
                                 message_length = int(message_header.decode(FORMAT).strip())
                                 message = client.recv(message_length)
@@ -738,9 +738,8 @@ class GUI:
                                     for dics in message:
                                         dics['selected'] = False
                                         self.players.append(dics)
-                                    break
-                        #except:   
-                            #self.on_closing()
+                        except:   
+                            self.on_closing()
                 
         # function to send messages 
         def sendMessage(self):

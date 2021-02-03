@@ -232,6 +232,7 @@ while True:
             # Accept new connection
             # That gives us new socket - client socket, connected to this given client only, it's unique for that client
             # The other returned object is ip/port set
+            
             client_socket, client_address = server_socket.accept()
             sockets_list.append(client_socket)
 
@@ -397,27 +398,32 @@ while True:
 
                     else:
                         
-                        login_message='Ok'
+                        login_message=True
                         user['data']=user['data'].decode('utf-8').replace(' ','_')
-                        
-                        for socket in clients:
-                            if clients[socket]['data']==user['data']:
-                                login_message='Username já em uso, tente outro'
 
-                        if login_message=='Ok':
+                        if len(sockets_list)>=10:
+                            sockets_list.remove(notified_socket)
+                            login_message='Servidor lotado'
+
+                        if login_message==True:
+                            for socket in clients:
+                                if clients[socket]['data']==user['data']:
+                                    login_message='Username já em uso, tente outro'
+
+                        if login_message==True:
                             if user['data']=='Server' or user['data']=='':
                                 login_message='Username não pode ser Server ou ser branco, tente outro'
 
-                        if login_message=='Ok':
+                        if login_message==True:
+                            if '\\' in user['data']:
+                                login_message='Retire caracteres \ do username'
+
+                        if login_message==True:
                             if len(user['data'])>12:
                                 login_message='Username pode conter até 12 caracteres, tente outro'
-
-                        if login_message=='Ok':
-                            if '/' in user['data'] or '\\' in user['data']:
-                                login_message='Retire caracteres / e \ do username'
                             else:
                                 espera_de_cor[notified_socket]=user
-
+            
                         login_message=login_message.encode('utf-8')
                         login_message_header=f"{len(login_message):<{HEADER_LENGTH}}".encode('utf-8')
                         notified_socket.send(login_message_header+login_message)
