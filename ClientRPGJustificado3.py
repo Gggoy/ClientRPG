@@ -499,21 +499,21 @@ class GUI:
                 self.playerBtts2.append(tempButton)
                 self.playerBtts2[-1].place(relwidth=1, relheight=0.1, rely = 0.1*(len(self.playerBtts2)-1))
                 
-        def displayres(self,res):
+        def displayres(self,res,window):
             self.label.config(text='Crítico: '+str(res.crit)+'; Sucesso: '+str(res.p)+'; Rolado: '+str(res.r))
             res.p=res.p//5
             res.r=res.r//5
             res.crit=res.crit//5
-            #self.progress = ttk.Progressbar(self.Window2, orient=HORIZONTAL, length = 406, mode='determinate')
+            self.progress = Progressbar(window,style="black.Horizontal.TProgressbar", orient=HORIZONTAL, length = 402, mode='determinate')
             #self.progress.pack(expand=False, padx=10, pady=10)
             #self.barrap1=Label(self.progress, bg = 'orange')                 
             #self.barrap2=Label(self.progress, bg = 'orange')                 
             #self.barracrit1=Label(self.progress, bg = 'red')                 
             #self.barracrit2=Label(self.progress, bg = 'red') 
-            self.barracrit1.place(relwidth=0.0025,x=res.crit+1)
-            self.barrap1.place(relwidth=0.0025,x=res.p+1)
-            self.barracrit2.place(relwidth=0.0025,x=res.crit+3)
-            self.barrap2.place(relwidth=0.0025,x=res.p+3)
+            self.barracrit1.place(relwidth=0.0025,x=res.crit-1)
+            self.barrap1.place(relwidth=0.0025,x=res.p-1)
+            self.barracrit2.place(relwidth=0.0025,x=res.crit+1)
+            self.barrap2.place(relwidth=0.0025,x=res.p+1)
             for i in range(9):
                 time.sleep(0.7)
                 if 4*self.progress['value']+2**(8-i)<=res.r:
@@ -671,6 +671,10 @@ class GUI:
                 self.Window.bind("<Down>",self.up_down)
                 self.Window.protocol("WM_DELETE_WINDOW", self.on_closing)
 
+                self.s = Style()
+                self.s.theme_use('alt')
+                self.s.configure("black.Horizontal.TProgressbar", foreground='black', background='black')
+
         def on_mousewheel(self, event):
             self.textCons.yview_scroll(-1*int(event.delta/120), "units")
 
@@ -752,7 +756,7 @@ class GUI:
                                 elif type(message).__name__=='res':
                                     if not self.Window2.winfo_viewable():
                                         self.blocswitch()
-                                    self.displayres(message)
+                                    self.displayres(message,self.Window2)
                                 else:
                                     self.players = []
                                     for dics in message:
