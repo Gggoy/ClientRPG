@@ -11,6 +11,7 @@ from tkinter.colorchooser import *
 import sys
 import re
 import pickle
+import numpy as np
 
 red=Color('#ff0000')
 violet=Color('#ff00ff')
@@ -514,12 +515,12 @@ class GUI:
                 self.playerBtts2[-1].place(relwidth=1, relheight=0.1, rely = 0.1*(len(self.playerBtts2)-1))
 
         def createRollLine(self, parent, rollIndex, diceIndex):
-            caseLineDie = [][]
-            preDSpinbox = [][]
-            caseLabel = [][]
-            posDSpinbox = [][]
-            caseDieBlank = [][]
-            advSpinbox = [][]
+            caseLineDie = np.zeros((rollIndex, diceIndex))
+            preDSpinbox = np.zeros((rollIndex, diceIndex))
+            caseLabel = np.zeros((rollIndex, diceIndex))
+            posDSpinbox = np.zeros((rollIndex, diceIndex))
+            caseDieBlank = np.zeros((rollIndex, diceIndex))
+            advSpinbox = np.zeros((rollIndex, diceIndex))
             caseLineDie[rollIndex][diceIndex] = Label(parent, bg=rollBg[rollIndex%2])
             caseLineDie[rollIndex][diceIndex].pack(side='top')
             preDSpinbox[rollIndex][diceIndex] = Spinbox(caseLineDie,
@@ -565,69 +566,57 @@ class GUI:
             advSpinbox[rollIndex][diceIndex].pack(side='left')
 
         def createRollBox(self):
-            case = []
-            caseLineLabels = []
-            caseLabel = []
-            antRadioButton = []
-            intRadioButton = []
-            posRadioButton = []
-            caseLineQtdAdv = []
-            caseLabelQtd = []
-            qntSpinBox = []
-            caseLabelBlank = []
-            caseLabelAdv = []
-            plusBtt = []
             for i in range(len(self.rollBoxesData)):
-                case[i] = Label(self.rollBit, bg = rollBg[i%2])
-                case[i].pack()
-                caseLineLabels[i] = Label(case, bg=rollBg[i%2])
-                caseLineLabels[i].pack(side='top')
-                caseLabel[i] = Label(caseLineLabels,
+                case = Label(self.rollBit, bg = rollBg[i%2])
+                case.pack()
+                caseLineLabels = Label(case, bg=rollBg[i%2])
+                caseLineLabels.pack(side='top')
+                caseLabel = Label(caseLineLabels,
                                                     text = ("Recurso "+str(i+1)),
                                                     font = "Courier 10 bold",
                                                     bg = rollBg[i%2],
                                                     width = 10,
                                                     height = 1,
                                                     padx = 100)
-                caseLabel[i].pack(side='left')
-                antRadioButton[i] = Radiobutton(caseLineLabels, 
+                caseLabel.pack(side='left')
+                antRadioButton = Radiobutton(caseLineLabels, 
                                                             variable = self.rollBoxesData[i].time, 
                                                             value = 'A',
                                                             text = 'A', 
                                                             bg=rollBg[i%2], 
                                                             font = 'Courier 10 bold')
-                antRadioButton[i].pack(side='left')
+                antRadioButton.pack(side='left')
                 if(self.rollBoxesData[i].time == 'A'):
-                    antRadioButton[i].select()
+                    antRadioButton.select()
                 else:
-                    antRadioButton[i].deselect()
-                intRadioButton[i] = Radiobutton(caseLineLabels, 
+                    antRadioButton.deselect()
+                intRadioButton = Radiobutton(caseLineLabels, 
                                                             variable = self.rollBoxesData[i].time, 
                                                             value = 'I',
                                                             text = 'I', 
                                                             bg=rollBg[i%2], 
                                                             font = 'Courier 10 bold')
-                intRadioButton[i].pack(side='left')
+                intRadioButton.pack(side='left')
                 if(self.rollBoxesData[i].time == 'I'):
-                    intRadioButton[i].select()
+                    intRadioButton.select()
                 else:
-                    intRadioButton[i].deselect()
-                posRadioButton[i] = Radiobutton(caseLineLabels, 
+                    intRadioButton.deselect()
+                posRadioButton = Radiobutton(caseLineLabels, 
                                                             variable = self.rollBoxesData[i].time, 
                                                             value = 'P',
                                                             text = 'P', 
                                                             bg=rollBg[i%2], 
                                                             font = 'Courier 10 bold')
-                posRadioButton[i].pack(side='left')
+                posRadioButton.pack(side='left')
                 if(self.rollBoxesData[i].time == 'P'):
-                    posRadioButton[i].select()
+                    posRadioButton.select()
                 else:
-                    posRadioButton[i].deselect()
-                caseLineQtdAdv[i] = Label(case, bg=rollBg[i%2])
-                caseLineQtdAdv[i].pack(side='top')
-                caseLabelQtd[i] = Label(caseLineQtdAdv, text = "Quantidade", font = "Courier 10 bold", bg = rollBg[i%2], width = 10, height = 1)
-                caseLabelQtd[i].pack(side='left')
-                qntSpinbox[i] = Spinbox(caseLineQtdAdv,
+                    posRadioButton.deselect()
+                caseLineQtdAdv = Label(case, bg=rollBg[i%2])
+                caseLineQtdAdv.pack(side='top')
+                caseLabelQtd = Label(caseLineQtdAdv, text = "Quantidade", font = "Courier 10 bold", bg = rollBg[i%2], width = 10, height = 1)
+                caseLabelQtd.pack(side='left')
+                qntSpinbox = Spinbox(caseLineQtdAdv,
                                                     textvariable = self.rollBoxesData[i].qnt,
                                                     bg=rollBg[i%2],
                                                     font='Courier 10',
@@ -635,32 +624,32 @@ class GUI:
                                                     from_ = -100,
                                                     to = 100,
                                                     value = 0)
-                qntSpinbox[i].pack(side='left')
-                caseLabelBlank[i] = Label(caseLineQtdAdv, 
+                qntSpinbox.pack(side='left')
+                caseLabelBlank = Label(caseLineQtdAdv, 
                                                         text = "",
                                                         font = "Courier 10 bold",
                                                         bg = rollBg[i%2],
                                                         width = 10,
                                                         height = 1,
                                                         padx = 100)
-                caseLabelBlank[i].pack(side='left')
-                caseLabelAdv[i] = Label(caseLineQtdAdv, 
+                caseLabelBlank.pack(side='left')
+                caseLabelAdv = Label(caseLineQtdAdv, 
                                                     text = "Advantage",
                                                     font = "Courier 10 bold",
                                                     bg = rollBg[i%2],
                                                     width = 10,
                                                     height = 1)
-                caseLabelAdv[i].pack(side='right')
+                caseLabelAdv.pack(side='right')
                 
                 for j in range(len(self.rollBoxesData[i].die)):
                     self.createRollLine(case, i, j)
 
-                plusBtt[i] = Button(case,
+                plusBtt = Button(case,
                                         text = '+',
                                         font = 'Courier 15 bold',
                                         background = rollBg[i%2],
                                         padx = 3)
-                plusBtt[i].pack(side='bottom')
+                plusBtt.pack(side='bottom')
 
                 self.rollBoxes.append(case)
                 
