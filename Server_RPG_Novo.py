@@ -124,9 +124,9 @@ def apply_posmod_pre(receiver,fonte,rolagem):
                                 send_new_message(notifi,receiver)
 
                     else:
-                        um=(rolagem['advan']==1)*3+(rolagem['advan']==2)*5+(rolagem['advan']>2)*6-(rolagem['advan']==-1)*3-(rolagem['advan']==-2)*5-(rolagem['advan']<-2)*6:
+                        um=(rolagem['advan']==1)*3+(rolagem['advan']==2)*5+(rolagem['advan']>2)*6-(rolagem['advan']==-1)*3-(rolagem['advan']==-2)*5-(rolagem['advan']<-2)*6
                         rolagem['advan']+=i[1]
-                        dois=(rolagem['advan']==1)*3+(rolagem['advan']==2)*5+(rolagem['advan']>2)*6-(rolagem['advan']==-1)*3-(rolagem['advan']==-2)*5-(rolagem['advan']<-2)*6:
+                        dois=(rolagem['advan']==1)*3+(rolagem['advan']==2)*5+(rolagem['advan']>2)*6-(rolagem['advan']==-1)*3-(rolagem['advan']==-2)*5-(rolagem['advan']<-2)*6
                         if random.randint(1,20)<=abs(um-dois):
                             mod[0]-=1
                             notifi='Usado o recurso '+str(i[1])+'*Advantage em '+str(mod[1])+' na rolagem entre '+clients[rolagem['caller']]['data']+' e '+clients[rolagem['receiver']]['data']+'. Restam '+str(mod[0])+' desse recurso.'
@@ -168,9 +168,9 @@ def apply_posmod_pos(receiver,fonte,rolagem,r):
                             send_new_message(notifi,receiver)
                             rolagem['p']+=i[0]*random.randint(1,i[1])*50+1
                 elif i[0]=='%':
-                    um=(rolagem['advan']==1)*300+(rolagem['advan']==2)*500+(rolagem['advan']>2)*600-(rolagem['advan']==-1)*300-(rolagem['advan']==-2)*500-(rolagem['advan']<-2)*600:
+                    um=(rolagem['advan']==1)*300+(rolagem['advan']==2)*500+(rolagem['advan']>2)*600-(rolagem['advan']==-1)*300-(rolagem['advan']==-2)*500-(rolagem['advan']<-2)*600
                     rolagem['advan']+=i[1]
-                    dois=(rolagem['advan']==1)*300+(rolagem['advan']==2)*500+(rolagem['advan']>2)*600-(rolagem['advan']==-1)*300-(rolagem['advan']==-2)*500-(rolagem['advan']<-2)*600:
+                    dois=(rolagem['advan']==1)*300+(rolagem['advan']==2)*500+(rolagem['advan']>2)*600-(rolagem['advan']==-1)*300-(rolagem['advan']==-2)*500-(rolagem['advan']<-2)*600
                     if r<=rolagem['p'] and i[1]<0:
                         if r+um-dois>rolagem['p']:
                             rolagem['p']+=-um+dois

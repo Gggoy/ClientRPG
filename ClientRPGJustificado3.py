@@ -302,6 +302,22 @@ def shorten(text, width, **kwargs):
     w = TextWrapper(width=width, max_lines=1, **kwargs)
     return w.fill(' '.join(text.strip().split()))
 
+class RollBox:
+    time: str
+    qnt: int
+    die = []
+
+    def __init__(self):
+        self.time = "A"
+        self.qnt = 0
+    
+    def addDice(self, preD = 0, posD = 0, adv = 0):
+        self.die.append({
+            "preD": preD,
+            "posD": posD,
+            "adv": adv
+        })
+    
 
 # -- Loosely related functionality -------------------------------------
 
@@ -484,27 +500,157 @@ class GUI:
 
             for i in range(len(self.players)):
                 tempButton = Button(self.sidebar,
-                                    fg = self.players[i]['color'],
-                                    bg = 'black', text = self.players[i]['name'],
-                                    font = "Courier 14 bold",
-                                    command=lambda c=i: self.onPlayerClick(c))
+                                                fg = self.players[i]['color'],
+                                                bg = 'black', text = self.players[i]['name'],
+                                                font = "Courier 14 bold",
+                                                command=lambda c=i: self.onPlayerClick(c))
                 self.playerBtts.append(tempButton)
                 self.playerBtts[-1].place(relwidth=1, relheight=0.1, rely = 0.1*(len(self.playerBtts)-1))
 
                 tempButton = Button(self.sidebaroll,
-                                    fg = self.players[i]['color'],
-                                    bg = 'black', text = self.players[i]['name'],
-                                    font = "Courier 14 bold",
-                                    command=lambda c=i: self.onPlayerSelec(c))
+                                                    fg = self.players[i]['color'],
+                                                    bg = 'black', text = self.players[i]['name'],
+                                                    font = "Courier 14 bold",
+                                                    command=lambda c=i: self.onPlayerSelec(c))
                 self.playerBtts2.append(tempButton)
                 self.playerBtts2[-1].place(relwidth=1, relheight=0.1, rely = 0.1*(len(self.playerBtts2)-1))
+
+        def createRollLine(self, parent, rollIndex, diceIndex):
+            caseLineDie = Label(parent, bg='grey')
+            caseLineDie.pack(side='top')
+            preDSpinbox = Spinbox(caseLineDie,
+                                                textvariable = self.rollBoxesData[rollIndex].die[diceIndex]['preD'],
+                                                bg='white',
+                                                font='Courier 10',
+                                                width = 3,
+                                                from_ = -100,
+                                                to = 100,
+                                                value = 0)
+            preDSpinbox.pack(side='left')
+            caseLabel = Label(caseLineDie, text = "D", font = "Courier 8 bold", bg = 'grey', width = 10, height = 1)
+            caseLabel.pack(side='left')
+            posDSpinbox = Spinbox(caseLineDie,
+                                                textvariable = self.rollBoxesData[rollIndex].die[diceIndex]['posD'],
+                                                bg='white',
+                                                font='Courier 10',
+                                                width = 3,
+                                                from_ = 0,
+                                                to = 100,
+                                                value = 0)
+            posDSpinbox.pack(side='left')
+            caseDieBlank = Label(caseLineDie, 
+                                                text = "",
+                                                font = "Courier 10 bold",
+                                                bg = 'grey',
+                                                width = 10,
+                                                height = 1,
+                                                padx = 90)
+            caseDieBlank.pack(side='left')
+            advSpinbox = Spinbox(caseLineDie,
+                                                textvariable = self.rollBoxesData[rollIndex].die[diceIndex]['adv'],
+                                                bg='grey',
+                                                font='Courier 10',
+                                                width = 3,
+                                                from_ = -100,
+                                                to = 100,
+                                                value = 0)
+            advSpinbox.pack(side='left')
+
+        def createRollBox(self):
+
+            for rollB in self.rollBoxes:
+                rollB.destroy()
+            
+            
+            self.rollBoxes = []
+
+            for i in range(len(self.rollBoxesData)):
+                case = Label(self.rollBit, bg = 'grey')
+                case.pack()
+                caseLineLabels = Label(case, bg='grey')
+                caseLineLabels.pack(side='top')
+                caseLabel = Label(caseLineLabels, text = "Recurso 1", font = "Courier 10 bold", bg = 'grey', width = 10, height = 1, padx = 100)
+                caseLabel.pack(side='left')
+                antRadioButton = Radiobutton(caseLineLabels, 
+                                                            variable = self.rollBoxesData[i].time, 
+                                                            value = 'A',
+                                                            text = 'A', 
+                                                            bg='grey', 
+                                                            font = 'Courier 10 bold')
+                antRadioButton.pack(side='left')
+                if(self.rollBoxesData[i].time == 'A'):
+                    antRadioButton.select()
+                else:
+                    antRadioButton.deselect()
+                intRadioButton = Radiobutton(caseLineLabels, 
+                                                            variable = self.rollBoxesData[i].time, 
+                                                            value = 'I',
+                                                            text = 'I', 
+                                                            bg='grey', 
+                                                            font = 'Courier 10 bold')
+                intRadioButton.pack(side='left')
+                if(self.rollBoxesData[i].time == 'I'):
+                    intRadioButton.select()
+                else:
+                    intRadioButton.deselect()
+                posRadioButton = Radiobutton(caseLineLabels, 
+                                                            variable = self.rollBoxesData[i].time, 
+                                                            value = 'P',
+                                                            text = 'P', 
+                                                            bg='grey', 
+                                                            font = 'Courier 10 bold')
+                posRadioButton.pack(side='left')
+                if(self.rollBoxesData[i].time == 'P'):
+                    posRadioButton.select()
+                else:
+                    posRadioButton.deselect()
+                caseLineQtdAdv = Label(case, bg='grey')
+                caseLineQtdAdv.pack(side='top')
+                caseLabelQtd = Label(caseLineQtdAdv, text = "Quantidade", font = "Courier 10 bold", bg = 'grey', width = 10, height = 1)
+                caseLabelQtd.pack(side='left')
+                qntSpinbox = Spinbox(caseLineQtdAdv,
+                                                    textvariable = self.rollBoxesData[i].qnt,
+                                                    bg='white',
+                                                    font='Courier 10',
+                                                    width = 3,
+                                                    from_ = -100,
+                                                    to = 100,
+                                                    value = 0)
+                qntSpinbox.pack(side='left')
+                caseLabelBlank = Label(caseLineQtdAdv, 
+                                                        text = "",
+                                                        font = "Courier 10 bold",
+                                                        bg = 'grey',
+                                                        width = 10,
+                                                        height = 1,
+                                                        padx = 100)
+                caseLabelBlank.pack(side='left')
+                caseLabelAdv = Label(caseLineQtdAdv, 
+                                                    text = "Advantage",
+                                                    font = "Courier 10 bold",
+                                                    bg = 'grey',
+                                                    width = 10,
+                                                    height = 1)
+                caseLabelAdv.pack(side='right')
+                
+                for j in range(len(self.rollBoxesData[i].die)):
+                    self.createRollLine(case, i, j)
+
+                plusBtt = Button(case,
+                                        text = '+',
+                                        font = 'Courier 15 bold',
+                                        background = 'grey',
+                                        padx = 3)
+                plusBtt.pack(side='bottom')
+
+                self.rollBoxes.append(case)
                 
         def displayres(self,res,window):
             self.label.config(text='Crítico: '+str(res.crit)+'; Sucesso: '+str(res.p)+'; Rolado: '+str(res.r))
             res.p=res.p//5
             res.r=res.r//5
             res.crit=res.crit//5
-            self.progress = Progressbar(window,style="black.Horizontal.TProgressbar", orient=HORIZONTAL, length = 402, mode='determinate')
+            self.progress = ttk.Progressbar(window,style="black.Horizontal.TProgressbar", orient=HORIZONTAL, length = 402, mode='determinate')
             #self.progress.pack(expand=False, padx=10, pady=10)
             #self.barrap1=Label(self.progress, bg = 'orange')                 
             #self.barrap2=Label(self.progress, bg = 'orange')                 
@@ -584,23 +730,40 @@ class GUI:
                 self.bttframe = Frame(self.Window, width=30, height=500)
                 self.bttframe.pack(expand=False, side='left')
                 self.blocbtt= Button(self.bttframe, 
-                                                        text = ">", 
-                                                        font = "Courier 12 bold", 
-                                                        fg = 'white',
-                                                        bg='black',
-                                                        command = lambda : self.blocswitch())
+                                                    text = ">", 
+                                                    font = "Courier 12 bold", 
+                                                    fg = 'white',
+                                                    bg='black',
+                                                    command = lambda : self.blocswitch())
                 self.blocbtt.place(relheight=1,relwidth=1)
                 
                 self.Window2=Toplevel(self.Window)
                 self.Window2.title("ROLL") 
                 self.Window2.resizable(width = False, height = False) 
-                self.Window2.configure(width = 500, height = 500, bg = 'black')
+                self.Window2.configure(width = 800, height = 500, bg = 'black')
+                
                 self.label = Label(self.Window2,text='Select the players to roll', bg = 'black',fg='white', width=50, font = "Courier 14 bold", pady=5) 
                 self.label.pack(expand=False)
+                
                 self.sidebaroll = Frame(self.Window2, bg = 'black', width=200, height=500)
                 self.sidebaroll.pack(expand = False, fill = 'both', side = 'left')
+                
                 self.sep3 = Label(self.Window2, bg = 'white')
                 self.sep3.pack(expand = False, fill = 'both', side = 'left')
+
+                self.rollBit = Frame(self.Window2, bg = 'blue', width = 399, height = 500)
+                self.rollBit.pack(expand=False)
+
+                self.rollBoxesData = []
+                self.rollBoxesData.append(RollBox())
+                self.rollBoxesData[0].addDice()
+
+                self.rollBoxes = []
+                # self.createRollBox()
+
+                self.createRollBox()
+
+
                 self.Window2.protocol("WM_DELETE_WINDOW", self.blocswitch)
                 self.Window2.withdraw()
 
@@ -671,7 +834,7 @@ class GUI:
                 self.Window.bind("<Down>",self.up_down)
                 self.Window.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-                self.s = Style()
+                self.s = ttk.Style()
                 self.s.theme_use('alt')
                 self.s.configure("black.Horizontal.TProgressbar", foreground='black', background='black')
 
