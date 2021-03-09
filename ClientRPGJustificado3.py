@@ -957,8 +957,10 @@ class GUI:
                 testdice = RollBox()
                 self.rollBoxesData.append(testdice)
                 self.rollBoxesData[0].addDice()
+                self.rollBoxesData[0].addDice()
                 test2dice = RollBox()
                 self.rollBoxesData.append(test2dice)
+                self.rollBoxesData[1].addDice()
                                 
 
                 self.rollBoxes = []
