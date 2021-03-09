@@ -466,28 +466,29 @@ class GUI:
 
             class RollLineDesign:
                 def __init__(self, parent, die, bgColor):
+                    self.die = die
                     self.caseLineDie = Label(parent, bg = bgColor)
                     self.preDSpinbox = Spinbox(self.caseLineDie,
-                                                                textvariable = die['preD'],
+                                                                textvariable = self.die['preD'],
                                                                 bg = bgColor,
                                                                 font = 'Courier 10',
                                                                 width = 3,
                                                                 from_ = -100,
                                                                 to = 100,
-                                                                value = die['preD'])
+                                                                value = self.die['preD'])
                     self.caseLabel = Label(self.caseLineDie,
                                                             text = "D",
                                                             font = "Courier 8 bold",
                                                             bg = bgColor,
                                                             height = 1)
                     self.posDSpinbox = Spinbox(self.caseLineDie,
-                                                                textvariable = die['posD'],
+                                                                textvariable = self.die['posD'],
                                                                 bg = bgColor,
                                                                 font = 'Courier 10',
                                                                 width = 3,
                                                                 from_ = 1,
                                                                 to = 100,
-                                                                value = die['posD'])
+                                                                value = self.die['posD'])
                     self.caseDieBlank = Label(self.caseLineDie, 
                                                                 text = "",
                                                                 font = "Courier 10 bold",
@@ -496,19 +497,19 @@ class GUI:
                                                                 height = 1,
                                                                 padx = 40)                                                                
                     self.antRadioButton = Radiobutton(self.caseLineDie, 
-                                                                        variable = die["time"], 
+                                                                        variable = self.die["time"], 
                                                                         value = 'A',
                                                                         text = 'A', 
                                                                         bg = bgColor, 
                                                                         font = 'Courier 10 bold')
                     self.intRadioButton = Radiobutton(self.caseLineDie, 
-                                                                        variable = die["time"], 
+                                                                        variable = self.die["time"], 
                                                                         value = 'I',
                                                                         text = 'I', 
                                                                         bg=bgColor, 
                                                                         font = 'Courier 10 bold')
                     self.posRadioButton = Radiobutton(self.caseLineDie, 
-                                                            variable = die['time'], 
+                                                            variable = self.die['time'], 
                                                             value = 'P',
                                                             text = 'P', 
                                                             bg=bgColor, 
@@ -521,13 +522,13 @@ class GUI:
                                                                     height = 1,
                                                                     padx = 40)                                                            
                     self.advSpinbox = Spinbox(self.caseLineDie,
-                                                                                        textvariable = die['adv'],
+                                                                                        textvariable = self.die['adv'],
                                                                                         bg='grey',
                                                                                         font='Courier 10',
                                                                                         width = 3,
                                                                                         from_ = -100,
                                                                                         to = 100,
-                                                                                        value = die['adv'])
+                                                                                        value = self.die['adv'])
 
                 def packClass(self):
                     self.caseLineDie.pack(side='top')
