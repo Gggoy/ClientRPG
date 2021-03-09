@@ -615,7 +615,7 @@ class GUI:
             self.label.config(text=self.label.cget('text')+' '+nomiz+' -')
 
         def rollerrola(self):
-            message_sent = pickle.dumps(roll(self.roll_list,'we'))
+            message_sent = pickle.dumps(roll(self.roll_list,self.who))
             message_sent_header = f"{len(message_sent):<{HEADER_LENGTH}}".encode(FORMAT)
             client.send(message_sent_header+message_sent)
             self.roll_list=[]
@@ -859,7 +859,8 @@ class GUI:
 
         # The main layout of the chat 
         def layout(self,name): 
-                
+
+                self.who='we'
                 self.name = name 
                 # to show chat window 
                 self.Window.deiconify() 
@@ -910,6 +911,44 @@ class GUI:
                 self.sep3 = Label(self.Window2, bg = 'white')
                 self.sep3.pack(expand = False, fill = 'both', side = 'left')
 
+                self.wholabel = Frame(self.Window2, bg = rollBg[0], width=500, height = 30)
+                self.wholabel.pack(expand=False, fill='x')
+
+                self.meBtt=Radiobutton(self.wholabel, 
+                                                                        variable = self.who, 
+                                                                        value = 'me',
+                                                                        text = 'Me', 
+                                                                        bg=rollBg[0], 
+                                                                        font = 'Courier 10 bold')
+                
+                self.hiddenBtt=Radiobutton(self.wholabel, 
+                                                                        variable = self.who, 
+                                                                        value = 'hidden',
+                                                                        text = 'Hidden', 
+                                                                        bg=rollBg[0], 
+                                                                        font = 'Courier 10 bold')
+                self.weBtt=Radiobutton(self.wholabel, 
+                                                                        variable = self.who, 
+                                                                        value = 'we',
+                                                                        text = 'We', 
+                                                                        bg=rollBg[0], 
+                                                                        font = 'Courier 10 bold')
+
+                self.youBtt=Radiobutton(self.wholabel, 
+                                                                        variable = self.who, 
+                                                                        value = 'you',
+                                                                        text = 'You', 
+                                                                        bg=rollBg[0], 
+                                                                        font = 'Courier 10 bold')
+
+                self.sdtypelabel= Label(self.wholabel,bg=rollBg[0],text='Send type: ',fg='black', width=11, font = 'Courier 12 bold')
+                self.sdtypelabel.pack(side='left')
+                self.weBtt.pack(side='left')
+                self.meBtt.pack(side='left')
+                self.youBtt.pack(side='left')
+                self.hiddenBtt.pack(side='left')
+                self.weBtt.select()
+                
                 self.rollBit = Frame(self.Window2, bg = 'blue', width = 399, height = 500)
                 self.rollBit.pack(expand=False)
 
@@ -1104,7 +1143,42 @@ class GUI:
                         message_sent = pickle.dumps(msg(destinatários,self.msg))
                         message_sent_header = f"{len(message_sent):<{HEADER_LENGTH}}".encode(FORMAT)
                         client.send(message_sent_header+message_sent)    
-                        break   
+                        break
+        def conversao(self):
+            i=-1
+            rec=bloco((0,0),[],'s')
+            for recurso in self.rollBoxdata:
+                i+=1
+                rec.posmod.append((recurso.qnt,[]))
+                for linha in recurso.die:
+                    if linha['tipo']=='D':
+                        if linha['time']=='A':
+                            rec.posmod[i][0]-=1
+                            if linha['preD']==0:
+                                rec.premod[0]+=linha['posD']
+                            else:
+                                rec.premod[0]+=linha['preD']*random.randint(1,linha['posD'])
+                        elif linha.time=='I':
+                            if linha['preD']==0:
+                                rec.posmod[i][1].append((linha['posD'],0))
+                            else:
+                                rec.posmod[i][1].append((linha['preD'],linha['posD']))
+                        else:
+                            if linha['preD']==0:
+                                rec.posmod[i][1].append(linha['posD'])
+                            else:
+                                rec.posmod[i][1].append([linha['preD'],linha['posD']])
+                    else:
+                        if linha.time=='A':
+                            rec.posmod[i][0]-=1
+                            rec.premod[1]+=linha['adv']
+                        elif linha.time=='I':
+                            rec.posmod[i][1].append(('*',linha['adv']))
+                        else:
+                            rec.posmod[i][1].append(('%',linha['adv']))
+            message_sent = pickle.dumps(rec)
+            message_sent_header = f"{len(message_sent):<{HEADER_LENGTH}}".encode(FORMAT)
+            client.send(message_sent_header+message_sent)
 
 # create a GUI class object
 g = GUI()
